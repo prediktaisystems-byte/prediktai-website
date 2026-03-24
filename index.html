@@ -126,22 +126,126 @@
                 Loading prediction results...
             </div>
             
-            <table class="results-table" id="resultsTable" style="display: none;">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Match</th>
-                        <th>Type</th>
-                        <th>Market</th>
-                        <th>Confidence</th>
-                        <th>Result</th>
-                    </tr>
-                </thead>
-                <tbody id="resultsBody">
-                </tbody>
-            </table>
+            <div id="resultsContainer" style="display: none;">
+                <!-- Results cards will be inserted here -->
+            </div>
         </div>
     </section>
+
+    <style>
+        .result-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            border-left: 4px solid #4f46e5;
+        }
+        
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f4ff;
+        }
+        
+        .match-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e1b4b;
+        }
+        
+        .match-date {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        
+        .markets-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+        
+        .market-section h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .hidden-section h4 {
+            color: #4f46e5;
+        }
+        
+        .familiar-section h4 {
+            color: #10b981;
+        }
+        
+        .market-item {
+            background: #f9fafb;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+        
+        .market-name {
+            font-weight: 600;
+            color: #334155;
+            flex: 1;
+        }
+        
+        .market-conf {
+            color: #4f46e5;
+            font-weight: 700;
+            margin: 0 0.5rem;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        .market-result {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .result-win {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .result-loss {
+            background: #fee2e2;
+            color: #7f1d1d;
+        }
+        
+        .result-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        @media (max-width: 768px) {
+            .markets-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .market-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+    </style>
 
     <!-- Hidden Markets CTA -->
     <section style="padding: 4rem 1rem; background: white;">
@@ -394,62 +498,127 @@
                     return;
                 }
                 
-                const resultsBody = document.getElementById('resultsBody');
-                resultsBody.innerHTML = '';
+                const container = document.getElementById('resultsContainer');
+                container.innerHTML = '';
                 
-                // Display up to 10 most recent results
-                resultsData.slice(0, 10).forEach(result => {
-                    // Create rows for each market
-                    if(result.market1) {
-                        const tr1 = document.createElement('tr');
-                        const resultBadge1 = getResultBadge(result.result1);
-                        tr1.innerHTML = `
-                            <td>${formatDate(result.date)}</td>
-                            <td>${result.match}</td>
-                            <td>${result.marketType || ''}</td>
-                            <td>${result.market1}</td>
-                            <td>${result.conf1 || ''}%</td>
-                            <td>${resultBadge1}</td>
-                        `;
-                        resultsBody.appendChild(tr1);
+                // Group results by match
+                const matchGroups = {};
+                resultsData.forEach(result => {
+                    const matchKey = result.match;
+                    if(!matchGroups[matchKey]) {
+                        matchGroups[matchKey] = {
+                            date: result.date,
+                            match: result.match,
+                            hidden: [],
+                            familiar: []
+                        };
                     }
                     
-                    if(result.market2) {
-                        const tr2 = document.createElement('tr');
-                        const resultBadge2 = getResultBadge(result.result2);
-                        tr2.innerHTML = `
-                            <td>${formatDate(result.date)}</td>
-                            <td>${result.match}</td>
-                            <td>${result.marketType || ''}</td>
-                            <td>${result.market2}</td>
-                            <td>${result.conf2 || ''}%</td>
-                            <td>${resultBadge2}</td>
-                        `;
-                        resultsBody.appendChild(tr2);
-                    }
-                    
-                    if(result.market3) {
-                        const tr3 = document.createElement('tr');
-                        const resultBadge3 = getResultBadge(result.result3);
-                        tr3.innerHTML = `
-                            <td>${formatDate(result.date)}</td>
-                            <td>${result.match}</td>
-                            <td>${result.marketType || ''}</td>
-                            <td>${result.market3}</td>
-                            <td>${result.conf3 || ''}%</td>
-                            <td>${resultBadge3}</td>
-                        `;
-                        resultsBody.appendChild(tr3);
+                    const marketType = String(result.marketType || '').toUpperCase();
+                    if(marketType.includes('HIDDEN')) {
+                        matchGroups[matchKey].hidden.push(result);
+                    } else if(marketType.includes('FAMILIAR')) {
+                        matchGroups[matchKey].familiar.push(result);
                     }
                 });
                 
+                // Display up to 10 matches
+                Object.keys(matchGroups).slice(0, 10).forEach(matchKey => {
+                    const group = matchGroups[matchKey];
+                    const card = createMatchCard(group);
+                    container.appendChild(card);
+                });
+                
                 document.getElementById('resultsLoading').style.display = 'none';
-                document.getElementById('resultsTable').style.display = 'table';
+                container.style.display = 'block';
                 
             } catch(error) {
                 console.error('Error loading results:', error);
                 document.getElementById('resultsLoading').innerHTML = '❌ Error loading results. Please refresh the page.';
             }
+        }
+        
+        function createMatchCard(group) {
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            
+            const dateStr = formatDate(group.date);
+            
+            let html = `
+                <div class="match-header">
+                    <div>
+                        <div class="match-title">${group.match}</div>
+                        <div class="match-date">${dateStr}</div>
+                    </div>
+                </div>
+                <div class="markets-grid">
+            `;
+            
+            // Hidden Markets Section
+            if(group.hidden.length > 0) {
+                html += `
+                    <div class="market-section hidden-section">
+                        <h4>🎯 Hidden Markets (80-90%)</h4>
+                `;
+                
+                group.hidden.forEach(result => {
+                    const markets = [
+                        { name: result.market1, conf: result.conf1, result: result.result1 },
+                        { name: result.market2, conf: result.conf2, result: result.result2 },
+                        { name: result.market3, conf: result.conf3, result: result.result3 }
+                    ];
+                    
+                    markets.forEach(m => {
+                        if(m.name) {
+                            const resultBadge = getResultBadge(m.result);
+                            html += `
+                                <div class="market-item">
+                                    <span class="market-name">${m.name}</span>
+                                    <span class="market-conf">${m.conf || '0'}%</span>
+                                    ${resultBadge}
+                                </div>
+                            `;
+                        }
+                    });
+                });
+                
+                html += `</div>`;
+            }
+            
+            // Familiar Markets Section
+            if(group.familiar.length > 0) {
+                html += `
+                    <div class="market-section familiar-section">
+                        <h4>📌 Familiar Markets (50-65%)</h4>
+                `;
+                
+                group.familiar.forEach(result => {
+                    const markets = [
+                        { name: result.market1, conf: result.conf1, result: result.result1 },
+                        { name: result.market2, conf: result.conf2, result: result.result2 },
+                        { name: result.market3, conf: result.conf3, result: result.result3 }
+                    ];
+                    
+                    markets.forEach(m => {
+                        if(m.name) {
+                            const resultBadge = getResultBadge(m.result);
+                            html += `
+                                <div class="market-item">
+                                    <span class="market-name">${m.name}</span>
+                                    <span class="market-conf">${m.conf || '0'}%</span>
+                                    ${resultBadge}
+                                </div>
+                            `;
+                        }
+                    });
+                });
+                
+                html += `</div>`;
+            }
+            
+            html += `</div>`;
+            card.innerHTML = html;
+            return card;
         }
 
         // Format date for display
@@ -598,3 +767,4 @@
     </script>
 </body>
 </html>
+    
