@@ -3,338 +3,311 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PREDIKT AI - AI Football Market Analysis Dashboard</title>
+    <title>PREDIKT AI - AI Football Market Analysis</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://checkout.flutterwave.com/v3.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Outfit', Arial, sans-serif; color: #1e293b; line-height: 1.6; background: #f8fafc; }
-        header { background: linear-gradient(135deg, #4f46e5 0%, #2d20a0 100%); color: white; padding: 2rem 1rem; text-align: center; }
-        header h1 { font-size: 2.5rem; margin: 0.5rem 0; }
-        header .founder { font-size: 1rem; margin-bottom: 0.5rem; }
+        header { background: linear-gradient(135deg, #4f46e5 0%, #2d20a0 100%); color: white; padding: 3rem 1rem; text-align: center; }
+        header h1 { font-size: 3rem; margin: 0.5rem 0; font-weight: 800; }
+        header .founder { font-size: 1rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+        .tagline { font-style: italic; font-size: 1.2rem; opacity: 0.8; margin-bottom: 1rem; }
+        
         .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
         nav { background: white; padding: 1rem; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
-        nav a { color: #4f46e5; text-decoration: none; margin: 0 1.5rem; font-weight: 600; }
-        h2 { font-size: 2.2rem; color: #1e1b4b; margin-bottom: 2rem; text-align: center; }
-        .hero { background: linear-gradient(135deg, #f0f4ff 0%, #e8f0ff 100%); padding: 4rem 1rem; }
-        .hero h2 { font-size: 2.8rem; }
-        .highlight { color: #4f46e5; }
+        nav a { color: #4f46e5; text-decoration: none; margin: 0 1rem; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; }
         
-        /* Member Area Styles */
-        .member-area { background: #1e1b4b; color: white; padding: 4rem 1rem; border-radius: 20px; margin: 2rem 0; }
-        .unlock-box { max-width: 500px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 12px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
-        .unlock-input { width: 100%; padding: 1rem; border-radius: 8px; border: none; margin-bottom: 1rem; font-size: 1rem; font-family: 'Outfit'; }
-        .unlock-btn { width: 100%; background: #4f46e5; color: white; padding: 1rem; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1.1rem; }
-        
-        .prediction-card { background: white; color: #1e293b; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #4f46e5; }
-        .prediction-info h4 { font-size: 1.2rem; margin-bottom: 4px; }
-        .prediction-market { font-weight: 800; color: #4f46e5; font-size: 1.1rem; }
-        .lock-icon { font-size: 1.5rem; opacity: 0.5; }
+        h2 { font-size: 2.5rem; color: #1e1b4b; margin-bottom: 2rem; text-align: center; font-weight: 800; }
+        .section { padding: 5rem 1rem; }
+        .section.alt { background: #f1f5f9; }
 
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin: 2rem 0; }
-        .stat-box { background: white; padding: 2rem; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        .stat-number { font-size: 2.5rem; font-weight: 800; color: #4f46e5; }
-        .btn { background: linear-gradient(135deg, #4f46e5 0%, #2d20a0 100%); color: white; padding: 1rem 2rem; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; transition: transform 0.3s; }
-        .btn:hover { transform: translateY(-2px); }
+        /* Dashboard Section */
+        .dashboard-box { background: white; padding: 3rem; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); max-width: 800px; margin: -4rem auto 4rem; position: relative; z-index: 10; border-top: 6px solid #4f46e5; }
+        .dashboard-box h3 { font-size: 1.8rem; color: #1e1b4b; margin-bottom: 1rem; text-align: center; }
+        .unlock-form { display: flex; gap: 10px; margin-top: 1.5rem; }
+        .unlock-form input { flex: 1; padding: 1rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; font-family: inherit; }
+        .unlock-form button { background: #4f46e5; color: white; padding: 1rem 2rem; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
+
+        /* Prediction Cards */
+        .prediction-card { background: white; border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-left: 6px solid #4f46e5; }
+        .match-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; }
+        .match-info h4 { font-size: 1.4rem; color: #1e1b4b; font-weight: 800; }
+        .match-info p { color: #64748b; font-weight: 600; font-size: 0.9rem; }
+        .market-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .market-item { background: #f8fafc; padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .market-name { font-weight: 700; color: #334155; }
+        .market-conf { color: #4f46e5; font-weight: 800; }
+
+        /* 1xBet Recommendation */
+        .recommendation-box { background: #eff6ff; border: 1px solid #bfdbfe; padding: 1rem; border-radius: 12px; margin-top: 1.5rem; font-size: 0.9rem; color: #1e40af; line-height: 1.5; }
+        .recommendation-box a { color: #2563eb; font-weight: 800; text-decoration: underline; }
+
+        /* Stats & UI */
+        .btn { background: #4f46e5; color: white; padding: 1rem 2rem; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.3s; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3); }
         .btn-green { background: #10b981; }
-        .section { padding: 4rem 1rem; background: white; }
-        .section.alt { background: #f8fafc; }
+        .badge { padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+        .badge-hidden { background: #eef2ff; color: #4f46e5; }
+        .badge-familiar { background: #ecfdf5; color: #10b981; }
+
+        /* Forms */
+        .signup-form { max-width: 500px; margin: 0 auto; background: white; padding: 3rem; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; font-weight: 700; margin-bottom: 0.5rem; color: #1e1b4b; }
+        input { width: 100%; padding: 1rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; }
         
-        .price-card { background: white; padding: 2rem; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 2px solid transparent; }
-        .price-card.featured { border: 2px solid #4f46e5; }
-        .price { font-size: 2.2rem; color: #4f46e5; font-weight: 800; margin: 1rem 0; }
-        
-        footer { background: #1e1b4b; color: white; padding: 2rem 1rem; text-align: center; }
-        .hidden { display: none; }
+        footer { background: #0f172a; color: white; padding: 4rem 1rem; text-align: center; }
+        footer a { color: #818cf8; text-decoration: none; font-weight: 700; }
     </style>
 </head>
 <body>
+
     <header>
         <p class="founder">Built by Gideon Sylvester</p>
         <h1>🎯 PREDIKT AI</h1>
-        <p style="font-style: italic;">Patterns don't lie</p>
-        <p style="margin-top: 1rem; font-weight: 600;">⭐ 80-90% High Probability Market Insights</p>
+        <p class="tagline">"Patterns don't lie"</p>
+        <p>⭐ 80-90% High Probability AI Analysis</p>
     </header>
 
     <nav>
-        <a href="#home">Home</a>
-        <a href="#dashboard">Member Area</a>
-        <a href="#results">Past Results</a>
+        <a href="#dashboard">Dashboard</a>
+        <a href="#results">Results</a>
         <a href="#pricing">Pricing</a>
         <a href="#contact">Support</a>
     </nav>
 
-    <!-- Hero -->
-    <section class="hero" id="home">
+    <!-- Member Dashboard -->
+    <section id="dashboard" class="section" style="padding-top: 0;">
         <div class="container">
-            <h2>Stop Chasing Odds.<br>Unlock <span class="highlight">AI Intelligence.</span></h2>
-            <p style="font-size: 1.1rem; margin: 1.5rem 0;">Get instant access to AI-analyzed predictions for 6-24 matches daily. No more waiting for emails—log in and win.</p>
-            
-            <div class="stats">
-                <div class="stat-box">
-                    <div class="stat-number">80-90%</div>
-                    <p>Win Rate (Hidden Markets)</p>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number">Daily</div>
-                    <p>Instant Dashboard Updates</p>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number">6-24</div>
-                    <p>Matches Analyzed Daily</p>
-                </div>
-            </div>
-
-            <p style="text-align: center;">
-                <a href="#dashboard" class="btn">Start Free 7-Day Trial</a>
-            </p>
-        </div>
-    </section>
-
-    <!-- Member Dashboard Area -->
-    <section id="dashboard" class="section">
-        <div class="container">
-            <div class="member-area">
-                <h2 style="color: white;">🔓 Member Dashboard</h2>
-                <p style="text-align: center; margin-bottom: 2rem; opacity: 0.8;">Enter your registered email to unlock today's high-confidence predictions.</p>
+            <div class="dashboard-box">
+                <h3>🔓 Unlock Today's Picks</h3>
+                <p style="text-align: center; color: #64748b;">Enter your registered email to access today's AI analysis.</p>
+                <form class="unlock-form" id="unlockForm">
+                    <input type="email" id="unlockEmail" placeholder="your@email.com" required>
+                    <button type="submit" id="unlockBtn">Unlock Picks</button>
+                </form>
+                <div id="unlockMessage" style="margin-top: 1rem; text-align: center; font-weight: 700;"></div>
                 
-                <div class="unlock-box" id="unlockBox">
-                    <input type="email" id="memberEmail" class="unlock-input" placeholder="Enter your email address...">
-                    <button onclick="unlockTodayPicks()" class="unlock-btn" id="unlockBtn">Unlock Today's Picks</button>
-                    <p style="margin-top: 1rem; font-size: 0.8rem; text-align: center;">Not a member? <a href="#signup" style="color: #4f46e5; font-weight: 700;">Start 7-Day Free Trial</a></p>
-                </div>
-
-                <div id="predictionsContainer" class="hidden" style="margin-top: 2rem;">
-                    <h3 id="welcomeUser" style="margin-bottom: 1.5rem; text-align: center; color: #10b981;"></h3>
-                    <div id="picksList">
-                        <!-- Predictions will be injected here -->
-                    </div>
+                <div id="picksContainer" style="margin-top: 2rem; display: none;">
+                    <!-- Today's picks will appear here -->
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Results (Yesterday's Proof) -->
+    <!-- Yesterday's Results -->
     <section id="results" class="section alt">
         <div class="container">
-            <h2>Yesterday's Results</h2>
-            <p style="text-align: center; color: #64748b; margin-bottom: 2rem;">We let our results do the talking. Here is how we performed yesterday.</p>
-            
-            <div id="resultsLoading" style="text-align: center; color: #4f46e5; font-weight: 600; padding: 2rem;">
-                Loading yesterday's performance...
-            </div>
-            
-            <div id="resultsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-                <!-- Results cards will be inserted here -->
+            <h2>Yesterday's Proof</h2>
+            <p style="text-align: center; color: #64748b; margin-bottom: 3rem;">We don't hide our losses. We celebrate our consistency.</p>
+            <div id="resultsLoading" style="text-align: center; font-weight: 700; color: #4f46e5;">Loading results...</div>
+            <div id="resultsContainer"></div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="section">
+        <div class="container">
+            <h2>Simple Plans</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem;">
+                <!-- Trial -->
+                <div style="background: white; padding: 3rem; border-radius: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <h4 style="font-size: 1.5rem; color: #1e1b4b;">Free Trial</h4>
+                    <div style="font-size: 3rem; font-weight: 800; color: #4f46e5; margin: 1rem 0;">7 Days</div>
+                    <ul style="list-style: none; text-align: left; margin: 2rem 0; color: #64748b;">
+                        <li style="margin-bottom: 0.5rem;">✅ Full Dashboard Access</li>
+                        <li style="margin-bottom: 0.5rem;">✅ Hidden & Familiar Markets</li>
+                        <li style="margin-bottom: 0.5rem;">✅ 8:00 AM Daily Delivery</li>
+                    </ul>
+                    <a href="#signup" class="btn" style="width: 100%;">Start Free Trial</a>
+                </div>
+                <!-- Paid -->
+                <div style="background: white; padding: 3rem; border-radius: 24px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.1); border: 3px solid #4f46e5;">
+                    <h4 style="font-size: 1.5rem; color: #1e1b4b;">Premium</h4>
+                    <div style="font-size: 3rem; font-weight: 800; color: #4f46e5; margin: 1rem 0;">₦1,000<span style="font-size: 1rem;">/mo</span></div>
+                    <ul style="list-style: none; text-align: left; margin: 2rem 0; color: #64748b;">
+                        <li style="margin-bottom: 0.5rem;">✅ 30 Days Full Access</li>
+                        <li style="margin-bottom: 0.5rem;">✅ Priority AI Analysis</li>
+                        <li style="margin-bottom: 0.5rem;">✅ Cancel Anytime</li>
+                    </ul>
+                    <button onclick="openPayment()" class="btn btn-green" style="width: 100%;">Upgrade to Premium</button>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Signup -->
-    <section id="signup" class="section">
+    <section id="signup" class="section alt">
         <div class="container">
-            <div style="max-width: 600px; margin: 0 auto; background: white; padding: 3rem; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
-                <h2 style="margin-bottom: 1rem;">Start Free 7-Day Trial</h2>
-                <p style="text-align: center; color: #64748b; margin-bottom: 2rem;">Get instant access to the dashboard for 7 days. No credit card required.</p>
-                
+            <h2>Join PREDIKT AI</h2>
+            <div class="signup-form">
                 <form id="signupForm">
-                    <div style="margin-bottom: 1.5rem;">
-                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Full Name</label>
-                        <input type="text" id="name" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;" required>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="name" placeholder="Gideon Sylvester" required>
                     </div>
-                    <div style="margin-bottom: 1.5rem;">
-                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Email Address</label>
-                        <input type="email" id="email" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;" required>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="email" placeholder="name@example.com" required>
                     </div>
-                    <div style="margin-bottom: 1.5rem;">
-                        <label style="display: block; font-weight: 700; margin-bottom: 8px;">Phone Number</label>
-                        <input type="tel" id="phone" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;" required>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="phone" placeholder="+234..." required>
                     </div>
-                    <button type="submit" class="btn" style="width: 100%;">Activate My Dashboard Access</button>
+                    <button type="submit" class="btn" style="width: 100%;">Activate 7-Day Trial</button>
                 </form>
-                <div id="signupMsg" style="margin-top: 1rem; text-align: center; display: none; padding: 1rem; border-radius: 8px;"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing -->
-    <section id="pricing" class="section alt">
-        <div class="container">
-            <h2>Simple Access Plans</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-                <div class="price-card featured">
-                    <h3>🎯 Free Trial</h3>
-                    <div class="price">7 Days</div>
-                    <ul style="text-align: left; list-style: none; margin: 2rem 0; line-height: 2;">
-                        <li>✓ Instant Dashboard Access</li>
-                        <li>✓ All Global Leagues</li>
-                        <li>✓ Hidden & Familiar markets</li>
-                        <li>✓ Daily AI Analysis</li>
-                        <li>✓ No Credit Card Needed</li>
-                    </ul>
-                    <a href="#signup" class="btn">Start Free Trial</a>
-                </div>
-                <div class="price-card">
-                    <h3>💎 Premium</h3>
-                    <div class="price">₦1,000<span style="font-size: 0.9rem;">/month</span></div>
-                    <ul style="text-align: left; list-style: none; margin: 2rem 0; line-height: 2;">
-                        <li>✓ 30 Days Full Access</li>
-                        <li>✓ Priority Support</li>
-                        <li>✓ Advanced Market Insights</li>
-                        <li>✓ Cancel Anytime</li>
-                        <li>✓ Instant Daily Updates</li>
-                    </ul>
-                    <button onclick="openPayment()" class="btn btn-green">Upgrade to Premium</button>
-                </div>
+                <div id="signupMessage" style="margin-top: 1.5rem; text-align: center; font-weight: 700;"></div>
             </div>
         </div>
     </section>
 
     <footer>
-        <p style="font-weight: 700; margin-bottom: 0.5rem;">PREDIKT AI by Gideon Sylvester</p>
-        <p>&copy; 2026. Patterns don't lie. 🇳🇬</p>
-        <p style="font-size: 0.85rem; margin-top: 1rem; opacity: 0.7;">⚠️ Gambling involves risk. Please bet responsibly.</p>
+        <div class="container">
+            <p style="font-weight: 800; font-size: 1.5rem; margin-bottom: 1rem;">PREDIKT AI</p>
+            <p style="margin-bottom: 2rem;">Abuja, Nigeria • Patterns don't lie.</p>
+            <div style="margin-bottom: 2rem;">
+                <a href="https://t.me/PrediktAI" target="_blank">Telegram</a> | 
+                <a href="mailto:prediktaisystems@gmail.com">Support</a> | 
+                <a href="https://reffpa.com/L?tag=d_4237102m_1599c_&site=4237102&ad=1599&r=registration" target="_blank">1xBet</a>
+            </div>
+            <p style="font-size: 0.8rem; opacity: 0.6;">⚠️ Responsible gambling only. 18+</p>
+        </div>
     </footer>
 
     <script>
-        const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbz5hIRPD5g0AU7_NIt_jtDmRraUd8Ub8K5-pfAkeRwUatQk8lKpIXOe100bs8iGNfjK/exec';
-        const FW_KEY = 'FLWPUBK-5606228e397e23bfb6a0b38bb21eef9b-X';
+        // --- CONFIGURATION ---
+        const APPS_SCRIPT = 'PASTE_YOUR_GOOGLE_WEB_APP_URL_HERE'; // <--- PASTE YOUR URL HERE
+        const ONEXBET_LINK = "https://reffpa.com/L?tag=d_4237102m_1599c_&site=4237102&ad=1599&r=registration";
 
-        // 1. UNLOCK TODAY'S PICKS
-        async function unlockTodayPicks() {
-            const email = document.getElementById('memberEmail').value;
-            const btn = document.getElementById('unlockBtn');
-            
-            if(!email) { alert("Please enter your email."); return; }
-            
-            btn.innerText = "Verifying Access...";
-            btn.disabled = true;
-
-            try {
-                const response = await fetch(`${APPS_SCRIPT}?action=unlockPicks&email=${encodeURIComponent(email)}`);
-                const result = await response.json();
-
-                if(result.status === 'success') {
-                    document.getElementById('unlockBox').classList.add('hidden');
-                    document.getElementById('predictionsContainer').classList.remove('hidden');
-                    document.getElementById('welcomeUser').innerText = `Welcome back, ${result.userName}! Today's Analysis is UNLOCKED.`;
-                    
-                    const list = document.getElementById('picksList');
-                    list.innerHTML = '';
-                    
-                    result.data.forEach(row => {
-                        const card = document.createElement('div');
-                        card.className = 'prediction-card';
-                        card.innerHTML = `
-                            <div class="prediction-info">
-                                <h4>${row[1]} <span style="font-size: 0.8rem; color: #64748b;">(${row[10]})</span></h4>
-                                <p class="prediction-market">${row[3]} • <span style="color: #10b981;">${row[4]}% Confidence</span></p>
-                            </div>
-                            <div style="text-align: right;">
-                                <p style="font-size: 0.8rem; font-weight: 700; color: #4f46e5;">KICKOFF: ${row[9]}</p>
-                            </div>
-                        `;
-                        list.appendChild(card);
-                    });
-                } else {
-                    alert(result.message || "Access denied. Please check your email or subscription.");
-                    btn.innerText = "Unlock Today's Picks";
-                    btn.disabled = false;
-                }
-            } catch(e) {
-                alert("Connection error. Please try again.");
-                btn.innerText = "Unlock Today's Picks";
-                btn.disabled = false;
-            }
-        }
-
-        // 2. LOAD YESTERDAY'S RESULTS (For Proof)
-        async function loadResults() {
-            try {
-                const response = await fetch(`${APPS_SCRIPT}?action=getResults`);
-                const results = await response.json();
-                const container = document.getElementById('resultsContainer');
-                
-                if(!results || results.length === 0) {
-                    document.getElementById('resultsLoading').innerText = "No results to show for yesterday.";
-                    return;
-                }
-
-                document.getElementById('resultsLoading').style.display = 'none';
-                container.innerHTML = '';
-
-                results.forEach(res => {
-                    const card = document.createElement('div');
-                    card.style.cssText = "background: white; padding: 1.5rem; border-radius: 12px; border-bottom: 4px solid " + (res.outcome === 'WON' ? '#10b981' : '#ef4444');
-                    card.innerHTML = `
-                        <p style="font-size: 0.8rem; font-weight: 800; color: #64748b;">${res.competition}</p>
-                        <h4 style="margin: 5px 0;">${res.match}</h4>
-                        <p style="font-weight: 700; color: #4f46e5;">${res.market} (${res.confidence}%)</p>
-                        <div style="margin-top: 10px; font-weight: 800; color: ${res.outcome === 'WON' ? '#10b981' : '#ef4444'}">${res.outcome}</div>
-                    `;
-                    container.appendChild(card);
-                });
-            } catch(e) {
-                document.getElementById('resultsLoading').innerText = "Error loading results.";
-            }
-        }
-
-        // 3. SIGNUP LOGIC
-        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        // --- DASHBOARD: UNLOCK PICKS ---
+        document.getElementById('unlockForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const msg = document.getElementById('signupMsg');
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
-            
-            msg.style.display = 'block';
-            msg.style.background = '#f1f5f9';
-            msg.innerText = "Activating your dashboard access...";
+            const email = document.getElementById('unlockEmail').value;
+            const btn = document.getElementById('unlockBtn');
+            const msg = document.getElementById('unlockMessage');
+            const container = document.getElementById('picksContainer');
+
+            btn.innerText = 'Checking...';
+            msg.innerText = '';
+            container.style.display = 'none';
 
             try {
-                await fetch(APPS_SCRIPT, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`
-                });
-                
-                msg.style.background = '#d1fae5';
-                msg.style.color = '#065f46';
-                msg.innerText = "✅ SUCCESS! Your 7-day trial is active. You can now use your email to unlock the dashboard above!";
-                document.getElementById('signupForm').reset();
-            } catch(error) {
-                msg.style.background = '#fee2e2';
-                msg.innerText = "❌ Error activating trial. Please try again.";
+                const res = await fetch(`${APPS_SCRIPT}?action=unlockPicks&email=${encodeURIComponent(email)}`);
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    msg.style.color = '#10b981';
+                    msg.innerText = `Welcome back, ${result.userName}! Today's picks are unlocked.`;
+                    renderPicks(result.data);
+                    container.style.display = 'block';
+                } else {
+                    msg.style.color = '#ef4444';
+                    msg.innerText = 'No active subscription found for this email.';
+                }
+            } catch (err) {
+                msg.innerText = 'Error connecting to server.';
+            } finally {
+                btn.innerText = 'Unlock Picks';
             }
         });
 
-        // Initialize
-        window.onload = loadResults;
-
-        // Payment logic (Flutterwave)
-        function openPayment() {
-            const email = prompt("Please enter your email to upgrade:");
-            if(!email) return;
-
-            FlutterwaveCheckout({
-                public_key: FW_KEY,
-                tx_ref: 'PREDIKT_' + Date.now(),
-                amount: 1000,
-                currency: 'NGN',
-                customer: { email: email, name: "Premium Member" },
-                callback: (data) => {
-                    if(data.status === 'successful') {
-                        fetch(APPS_SCRIPT, {
-                            method: 'POST',
-                            mode: 'no-cors',
-                            body: `action=paid&email=${encodeURIComponent(email)}&reference=${data.transaction_id}`
-                        });
-                        alert("✅ Payment Successful! Your dashboard is now upgraded for 30 days.");
-                    }
-                }
+        function renderPicks(data) {
+            const container = document.getElementById('picksContainer');
+            container.innerHTML = '<h4 style="margin-bottom:1.5rem; color:#1e1b4b;">📅 Today\'s AI Analysis</h4>';
+            
+            data.forEach(row => {
+                const card = document.createElement('div');
+                card.className = 'prediction-card';
+                card.innerHTML = `
+                    <div class="match-header">
+                        <div class="match-info">
+                            <span class="badge ${row[2] === 'HIDDEN' ? 'badge-hidden' : 'badge-familiar'}">${row[2]} MARKETS</span>
+                            <h4>${row[1]}</h4>
+                            <p>${row[10]} • Kick-off: ${row[9]}</p>
+                        </div>
+                    </div>
+                    <div class="market-grid">
+                        <div class="market-item"><span class="market-name">${row[3]}</span><span class="market-conf">${row[4]}</span></div>
+                        <div class="market-item"><span class="market-name">${row[5]}</span><span class="market-conf">${row[6]}</span></div>
+                        <div class="market-item"><span class="market-name">${row[7]}</span><span class="market-conf">${row[8]}</span></div>
+                    </div>
+                    <div class="recommendation-box">
+                        💡 <strong>Recommendation:</strong> We recommend <a href="${ONEXBET_LINK}" target="_blank">1xBet</a> because they offer the full range of these hidden markets. However, you are free to choose any sportsbook you prefer.
+                    </div>
+                `;
+                container.appendChild(card);
             });
         }
+
+        // --- RESULTS: YESTERDAY'S PROOF ---
+        async function loadResults() {
+            try {
+                const res = await fetch(`${APPS_SCRIPT}?action=getResults`);
+                const data = await res.json();
+                const container = document.getElementById('resultsContainer');
+                document.getElementById('resultsLoading').style.display = 'none';
+
+                if (data.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;">No results posted for yesterday yet.</p>';
+                    return;
+                }
+
+                data.forEach(row => {
+                    const item = document.createElement('div');
+                    item.style.cssText = "background:white; padding:1.5rem; border-radius:12px; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 10px rgba(0,0,0,0.03);";
+                    const outcomeColor = row.outcome.toUpperCase() === 'WIN' ? '#10b981' : '#ef4444';
+                    item.innerHTML = `
+                        <div>
+                            <div style="font-weight:800; color:#1e1b4b;">${row.match}</div>
+                            <div style="font-size:0.8rem; color:#64748b;">${row.competition} • ${row.market}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-weight:800; color:#4f46e5;">${row.confidence}</div>
+                            <div style="font-weight:800; color:${outcomeColor}; font-size:0.8rem;">${row.outcome.toUpperCase()}</div>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            } catch (err) {
+                document.getElementById('resultsLoading').innerText = 'Error loading results.';
+            }
+        }
+
+        // --- SIGNUP FORM ---
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = document.getElementById('signupMessage');
+            const formData = new URLSearchParams();
+            formData.append('name', document.getElementById('name').value);
+            formData.append('email', document.getElementById('email').value);
+            formData.append('phone', document.getElementById('phone').value);
+
+            msg.innerText = 'Processing...';
+            
+            try {
+                // Using no-cors for Google Apps Script POST
+                await fetch(APPS_SCRIPT, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: formData
+                });
+                msg.style.color = '#10b981';
+                msg.innerText = '✅ Success! Check your email. Your trial is active.';
+                document.getElementById('signupForm').reset();
+            } catch (err) {
+                msg.style.color = '#ef4444';
+                msg.innerText = 'Error submitting. Please try again.';
+            }
+        });
+
+        // --- PAYMENT MODAL ---
+        function openPayment() {
+            alert("To upgrade to Premium (₦1,000/mo), please complete payment via Flutterwave. Once paid, your account will be updated automatically.\n\nRedirecting to payment...");
+            window.open("https://flutterwave.com/pay/sa6prtlc9lk8", "_blank");
+        }
+
+        window.onload = loadResults;
     </script>
 </body>
 </html>
