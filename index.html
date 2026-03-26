@@ -8,7 +8,7 @@
     <script src="https://checkout.flutterwave.com/v3.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Outfit', Arial, sans-serif; color: #1e293b; line-height: 1.6; }
+        body { font-family: 'Outfit', Arial, sans-serif; color: #1e293b; line-height: 1.6; background: #f8fafc; }
         header { background: linear-gradient(135deg, #4f46e5 0%, #2d20a0 100%); color: white; padding: 2rem 1rem; text-align: center; }
         header h1 { font-size: 2.5rem; margin: 0.5rem 0; }
         header .founder { font-size: 1rem; margin-bottom: 0.5rem; }
@@ -54,31 +54,15 @@
         .message { padding: 1rem; border-radius: 6px; margin-bottom: 1rem; display: none; }
         .message.success { background: #d1fae5; color: #065f46; display: block; }
         .message.error { background: #fee2e2; color: #7f1d1d; display: block; }
-        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
-        .feature { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        .feature h3 { color: #4f46e5; margin-bottom: 1rem; }
         .pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
         .price-card { background: white; padding: 2rem; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 2px solid transparent; }
         .price-card.featured { border: 2px solid #4f46e5; }
         .price { font-size: 2.2rem; color: #4f46e5; font-weight: 800; margin: 1rem 0; }
-        .cta-section { background: linear-gradient(135deg, #4f46e5 0%, #2d20a0 100%); color: white; padding: 3rem; border-radius: 12px; text-align: center; margin: 2rem 0; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); }
         .modal-content { background: white; margin: 5% auto; padding: 2rem; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
         .close { color: #aaa; float: right; font-size: 2rem; font-weight: bold; cursor: pointer; }
-        .payMethod { padding: 0.8rem; border: 2px solid #e2e8f0; background: white; border-radius: 8px; cursor: pointer; font-weight: 600; color: #1e1b4b; margin-right: 0.5rem; margin-bottom: 1rem; }
-        .payMethod.active { background: #4f46e5; color: white; border-color: #4f46e5; }
-        .faq { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
-        .faq-item { background: white; padding: 2rem; border-radius: 12px; border-left: 4px solid #4f46e5; }
-        .contact-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 2rem; }
-        .contact-box { background: linear-gradient(135deg, #f0f4ff 0%, #e8f0ff 100%); padding: 2rem; border-radius: 12px; text-align: center; }
-        .contact-box a { color: #4f46e5; text-decoration: none; font-weight: 700; }
         footer { background: #1e1b4b; color: white; padding: 2rem 1rem; text-align: center; }
-        footer a { color: #4f46e5; text-decoration: none; }
-        @media (max-width: 768px) {
-            .markets-grid { grid-template-columns: 1fr; }
-            nav { flex-direction: column; gap: 1rem; }
-            .nav-auth { margin-left: 0; }
-        }
+        @media (max-width: 768px) { .markets-grid { grid-template-columns: 1fr; } nav { flex-direction: column; gap: 1rem; } .nav-auth { margin-left: 0; } }
     </style>
 </head>
 <body>
@@ -93,7 +77,6 @@
         <a href="#home">Home</a>
         <a href="#results">Results</a>
         <a href="#markets">Markets</a>
-        <a href="#features">Why Us</a>
         <a href="#pricing">Pricing</a>
         <a href="#faq">FAQ</a>
         <a href="#contact">Contact</a>
@@ -103,22 +86,18 @@
         </div>
     </nav>
 
-    <!-- Hero -->
     <section class="hero" id="home">
         <div class="container">
             <h2>Stop Chasing Odds.<br>Start Making <span class="highlight">Smart Decisions.</span></h2>
-            <p style="font-size: 1.1rem; margin: 1.5rem 0;">Get AI-analyzed predictions for 6-24 matches across 7+ global leagues.</p>
-            <div class="stats" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="stats">
                 <div class="stat-box"><div class="stat-number">80-90%</div><p>Win Rate (Hidden)</p></div>
                 <div class="stat-box"><div class="stat-number">50-65%</div><p>Win Rate (Familiar)</p></div>
                 <div class="stat-box"><div class="stat-number">6-24</div><p>Matches Daily</p></div>
-                <div class="stat-box"><div class="stat-number">7+</div><p>Leagues Covered</p></div>
             </div>
             <p style="text-align: center;"><a href="#signup" class="btn">Start Free 7-Day Trial</a></p>
         </div>
     </section>
 
-    <!-- Results Section -->
     <section id="results" class="section">
         <div class="container">
             <h2>Latest Prediction Results</h2>
@@ -128,7 +107,6 @@
         </div>
     </section>
 
-    <!-- Members Only: Today's Predictions -->
     <section class="section alt" id="todayPredictions" style="display: none;">
         <div class="container">
             <div class="member-badge">🎯 Member Only</div>
@@ -138,7 +116,6 @@
         </div>
     </section>
 
-    <!-- Non-Members: Call to Action -->
     <section class="section login-required" id="membersCTA">
         <div class="container">
             <h3 style="text-align: center;">Want to See Today's Predictions?</h3>
@@ -146,8 +123,6 @@
             <p style="text-align: center;"><button class="btn" onclick="scrollTo('#signup')">Start Free Trial</button></p>
         </div>
     </section>
-
-    <!-- Pricing -->
     <section id="pricing" class="section alt">
         <div class="container">
             <h2>Simple Pricing</h2>
@@ -155,38 +130,17 @@
                 <div class="price-card featured">
                     <h3>🎯 Free Trial</h3>
                     <div class="price">7 Days</div>
-                    <ul style="text-align: left; list-style: none; margin: 1rem 0;">
-                        <li>✓ Daily AI predictions</li>
-                        <li>✓ Yesterday's results</li>
-                        <li>✓ No credit card required</li>
-                    </ul>
                     <a href="#signup" class="btn">Start Trial Now</a>
                 </div>
                 <div class="price-card">
                     <h3>💎 Premium</h3>
                     <div class="price">₦1,000<span style="font-size: 0.9rem;">/month</span></div>
-                    <ul style="text-align: left; list-style: none; margin: 1rem 0;">
-                        <li>✓ All trial features</li>
-                        <li>✓ Priority support</li>
-                        <li>✓ Cancel anytime</li>
-                    </ul>
-                    <button onclick="openPayment()" class="btn btn-green">Upgrade to Premium</button>
+                    <button onclick="openPayment()" class="btn btn-green">Upgrade Now</button>
                 </div>
             </div>
         </div>
     </section>
-    <!-- FAQ & Contact -->
-    <section id="faq" class="section">
-        <div class="container">
-            <h2>Frequently Asked Questions</h2>
-            <div class="faq">
-                <div class="faq-item"><h3>What are hidden markets?</h3><p>Statistical options most people miss. Higher win rates.</p></div>
-                <div class="faq-item"><h3>How do I access?</h3><p>Sign up, login, and predictions are instantly available.</p></div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Signup Form -->
     <section id="signup" class="section">
         <div class="container">
             <h2>Start Your Free 7-Day Trial</h2>
@@ -194,20 +148,16 @@
                 <div id="message" class="message"></div>
                 <form id="signupForm">
                     <div class="form-group"><label>Full Name *</label><input type="text" id="name" required></div>
-                    <div class="form-group"><label>Email Address *</label><input type="email" id="email" required></div>
-                    <div class="form-group"><label>Phone Number *</label><input type="tel" id="phone" required></div>
-                    <button type="submit" class="btn" style="width: 100%;">Activate Free Trial</button>
+                    <div class="form-group"><label>Email *</label><input type="email" id="email" required></div>
+                    <div class="form-group"><label>Phone *</label><input type="tel" id="phone" required></div>
+                    <button type="submit" class="btn" style="width: 100%;">Activate Trial</button>
                 </form>
             </div>
         </div>
     </section>
 
-    <footer>
-        <p>🎯 PREDIKT AI by Gideon Sylvester</p>
-        <p>&copy; 2026. Patterns don't lie. 🇳🇬</p>
-    </footer>
+    <footer><p>🎯 PREDIKT AI &copy; 2026. Patterns don't lie. 🇳🇬</p></footer>
 
-    <!-- Modals -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeLogin()">&times;</span>
@@ -220,23 +170,8 @@
         </div>
     </div>
 
-    <div id="paymentModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closePayment()">&times;</span>
-            <h2>Upgrade to Premium</h2>
-            <form id="paymentForm">
-                <div class="form-group"><label>Name *</label><input type="text" id="payName" required></div>
-                <div class="form-group"><label>Email *</label><input type="email" id="payEmail" required></div>
-                <div class="form-group"><label>Phone *</label><input type="tel" id="payPhone" required></div>
-                <button type="submit" class="btn" style="width: 100%;">Pay ₦1,000 Now</button>
-            </form>
-        </div>
-    </div>
-
     <script>
-        // ⚠️ REPLACE THIS WITH YOUR DEPLOYED WEB APP URL
-        const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbz0sZaFrLS5uhzcv0-jKMKvJyCChy-8RXYYPb7NUFhyEQWP8SQvsnOcMy0I5ybE4fXU/exec';
-        const FW_KEY = 'FLWPUBK-34c31ef822ee9b4b0f3c2ff17d20ee9e-X';
+        const APPS_SCRIPT = 'https://prediktaisystems-byte.github.io/prediktai-website/';
         let loggedInUser = null;
 
         function checkLogin() {
@@ -264,12 +199,9 @@
 
         function openLogin() { document.getElementById('loginModal').style.display = 'block'; }
         function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
-        function openPayment() { document.getElementById('paymentModal').style.display = 'block'; }
-        function closePayment() { document.getElementById('paymentModal').style.display = 'none'; }
         function logout() { loggedInUser = null; localStorage.removeItem('prediktUser'); updateUI(); location.reload(); }
         function scrollTo(id) { document.querySelector(id).scrollIntoView({ behavior: 'smooth' }); }
 
-        // Login Form
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
@@ -281,12 +213,10 @@
                     loggedInUser = { email, phone };
                     localStorage.setItem('prediktUser', JSON.stringify(loggedInUser));
                     closeLogin(); updateUI(); loadTodayPredictions();
-                    alert('✅ Login successful!');
                 } else { alert('❌ Account not found.'); }
             } catch (error) { alert('Error: ' + error.message); }
         });
 
-        // Signup Form
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('name').value;
@@ -296,51 +226,61 @@
             try {
                 await fetch(APPS_SCRIPT, {
                     method: 'POST', mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: `action=signup&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`
                 });
                 msg.className = 'message success'; msg.textContent = '✅ Trial activated! Login above.';
-                document.getElementById('signupForm').reset();
             } catch (error) { msg.className = 'message error'; msg.textContent = '❌ Error: ' + error.message; }
         });
 
-        // Load Results (Yesterday)
         async function loadResults() {
             try {
                 const response = await fetch(APPS_SCRIPT + '?action=getResults');
                 const resultsData = await response.json();
                 const container = document.getElementById('resultsContainer');
-                if (!resultsData || resultsData.length === 0) {
-                    document.getElementById('resultsLoading').innerHTML = '📊 No results yet.'; return;
+                const loading = document.getElementById('resultsLoading');
+                
+                if (!Array.isArray(resultsData) || resultsData.length === 0) {
+                    loading.innerHTML = '📊 No results yet.'; return;
                 }
+                
                 container.innerHTML = '';
                 const matchGroups = groupMatches(resultsData);
                 Object.keys(matchGroups).forEach(k => container.appendChild(createMatchCard(matchGroups[k])));
-                document.getElementById('resultsLoading').style.display = 'none'; container.style.display = 'block';
-            } catch (e) { document.getElementById('resultsLoading').innerHTML = '❌ Error.'; }
+                loading.style.display = 'none'; container.style.display = 'block';
+            } catch (e) { 
+                console.error('Results Error:', e);
+                document.getElementById('resultsLoading').innerHTML = '❌ Error loading results.'; 
+            }
         }
 
-        // Load Today's Predictions
         async function loadTodayPredictions() {
             if (!loggedInUser) return;
             try {
                 const response = await fetch(APPS_SCRIPT + '?action=unlockPicks&email=' + encodeURIComponent(loggedInUser.email));
                 const res = await response.json();
                 const container = document.getElementById('todayContainer');
-                if (res.status !== 'success' || !res.data || res.data.length === 0) {
-                    document.getElementById('todayLoading').innerHTML = '📊 No predictions yet.'; return;
+                const loading = document.getElementById('todayLoading');
+                
+                if (res.status !== 'success' || !Array.isArray(res.data) || res.data.length === 0) {
+                    loading.innerHTML = '📊 No predictions yet.'; return;
                 }
+                
                 container.innerHTML = '';
                 const matchGroups = groupMatches(res.data);
                 Object.keys(matchGroups).forEach(k => container.appendChild(createMatchCard(matchGroups[k])));
-                document.getElementById('todayLoading').style.display = 'none'; container.style.display = 'block';
-            } catch (e) { document.getElementById('todayLoading').innerHTML = '❌ Error.'; }
+                loading.style.display = 'none'; container.style.display = 'block';
+            } catch (e) { 
+                console.error('Today Error:', e);
+                document.getElementById('todayLoading').innerHTML = '❌ Error loading predictions.'; 
+            }
         }
 
         function groupMatches(data) {
+            if (!Array.isArray(data)) return {};
             const groups = {};
             data.forEach(r => {
-                if (!groups[r.match]) groups[r.match] = { date: r.date, match: r.match, hidden: [], familiar: [] };
+                if (!r || !r.match) return;
+                if (!groups[r.match]) groups[r.match] = { match: r.match, hidden: [], familiar: [] };
                 const type = String(r.marketType || '').toUpperCase();
                 if (type.includes('HIDDEN')) groups[r.match].hidden.push(r);
                 else groups[r.match].familiar.push(r);
@@ -350,7 +290,7 @@
 
         function createMatchCard(group) {
             const card = document.createElement('div'); card.className = 'result-card';
-            let html = `<div class="match-header"><div><div class="match-title">${group.match}</div></div></div><div class="markets-grid">`;
+            let html = `<div class="match-header"><div class="match-title">${group.match}</div></div><div class="markets-grid">`;
             if (group.hidden.length > 0) {
                 html += `<div class="market-section hidden-section"><h4>🎯 Hidden Markets</h4>`;
                 group.hidden.forEach(r => {
