@@ -1,540 +1,518 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PREDIKT AI - AI Football Market Analysis</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://checkout.flutterwave.com/v3.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Outfit', Arial, sans-serif; color: #1e293b; line-height: 1.6; background: #f8fafc; }
-        header { background: linear-gradient(135deg, #4f46e5 0%, #2d20a0 100%); color: white; padding: 2rem 1rem; text-align: center; }
-        header h1 { font-size: 2.5rem; margin: 0.5rem 0; }
-        header .founder { font-size: 1rem; margin-bottom: 0.5rem; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
-        nav { background: white; padding: 1rem; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; display: flex; justify-content: center; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
-        nav a { color: #4f46e5; text-decoration: none; font-weight: 600; }
-        .nav-auth { margin-left: auto; }
-        .nav-auth button { padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin: 0 0.5rem; }
-        .btn-login { background: #4f46e5; color: white; }
-        .btn-logout { background: #ef4444; color: white; }
-        h2 { font-size: 2.2rem; color: #1e1b4b; margin-bottom: 2rem; text-align: center; }
-        
-        /* Updated Hero Design */
-        .hero { background: linear-gradient(135deg, #f0f4ff 0%, #e8f0ff 100%); padding: 5rem 1rem; text-align: center; }
-        .hero h2 { font-size: 3.5rem; line-height: 1.2; margin-bottom: 1.5rem; }
-        .highlight { color: #4f46e5; }
-        .hero-sub { font-size: 1.25rem; font-weight: 500; color: #334155; margin: 0 auto 3rem; max-width: 850px; text-align: center; }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 3rem 0; }
-        .stat-box { background: white; padding: 2.5rem 1.5rem; border-radius: 16px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: transform 0.3s; }
-        .stat-box:hover { transform: translateY(-5px); }
-        .stat-number { font-size: 2.8rem; font-weight: 800; color: #4f46e5; margin-bottom: 0.5rem; }
-        .stat-box p { color: #64748b; font-weight: 500; }
-        
-        .btn { background: linear-gradient(135deg, #4f46e5 0%, #2d20a0 100%); color: white; padding: 1rem 2.5rem; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.3s; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2); }
-        .btn-green { background: #10b981; }
-        
-        /* Results Picker Styles */
-        .date-picker-container { position: relative; }
-        .date-picker-btn { background: white; border: 2px solid #e2e8f0; padding: 0.8rem 1.5rem; border-radius: 12px; font-family: 'Outfit'; font-weight: 700; color: #1e1b4b; cursor: pointer; display: flex; align-items: center; min-height: 44px; transition: all 0.2s; }
-        .date-picker-btn:hover { border-color: #4f46e5; color: #4f46e5; }
-        .date-picker-dropdown { display: none; position: absolute; top: calc(100% + 8px); right: 0; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); width: 280px; z-index: 1000; overflow: hidden; border: 1px solid #f1f5f9; }
-        .date-picker-dropdown.show { display: block; animation: fadeInDown 0.2s ease-out; }
-        .date-item { padding: 1rem 1.5rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: all 0.2s; display: flex; flex-direction: column; text-align: left; }
-        .date-item:last-child { border-bottom: none; }
-        .date-item:hover { background: #f8fafc; }
-        .date-item.active { background: #f0f4ff; border-left: 4px solid #4f46e5; }
-        .date-item .date-main { font-weight: 700; color: #1e1b4b; font-size: 1rem; }
-        .date-item .date-sub { font-size: 0.8rem; color: #64748b; font-weight: 500; }
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-        .discovery-section { background: #4f46e5; color: white; padding: 4rem 1rem; border-radius: 20px; text-align: center; margin: 2rem auto; max-width: 1000px; box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3); }
-        .discovery-section h2 { color: white; font-size: 2.5rem; margin-bottom: 1rem; }
-        .discovery-section h3 { font-size: 1.4rem; font-weight: 400; margin-bottom: 2rem; opacity: 0.9; }
-        .discovery-section p { font-size: 1.1rem; max-width: 800px; margin: 0 auto 2.5rem; line-height: 1.8; }
+import React, { useState, useEffect, useRef } from 'react';
 
-        /* Market Types Info Grid */
-        .markets-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; text-align: left; margin-top: 3rem; }
-        .market-info-box h3 { font-size: 1.6rem; color: #1e1b4b; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
-        .market-info-box .rate { font-size: 1.2rem; font-weight: 700; color: #4f46e5; margin-bottom: 1rem; }
-        .market-info-box p { color: #475569; margin-bottom: 1.5rem; line-height: 1.6; }
-        .market-info-box .examples { font-size: 0.95rem; color: #1e1b4b; }
-        
-        .section { padding: 4rem 1rem; background: white; }
-        .section.alt { background: #f8fafc; }
-        .result-card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2rem; border-left: 4px solid #4f46e5; }
-        .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #f0f4ff; }
-        .match-title { font-size: 1.2rem; font-weight: 700; color: #1e1b4b; }
-        .markets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem; }
-        .market-section h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid #e2e8f0; }
-        .hidden-section h4 { color: #4f46e5; }
-        .familiar-section h4 { color: #10b981; }
-        .market-item { background: #f9fafb; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; }
-        .market-name { font-weight: 600; color: #334155; flex: 1; }
-        .market-conf { color: #4f46e5; font-weight: 700; margin: 0 0.5rem; min-width: 50px; text-align: center; }
-        .result-badge { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 4px; font-weight: 600; font-size: 0.85rem; }
-        .result-win { background: #d1fae5; color: #065f46; }
-        .result-loss { background: #fee2e2; color: #7f1d1d; }
-        .result-pending { background: #fef3c7; color: #92400e; }
-        .member-badge { background: #4f46e5; color: white; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.85rem; font-weight: 700; display: inline-block; margin-bottom: 1rem; }
-        .login-section { max-width: 400px; margin: 2rem auto; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 1.5rem; }
-        label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e1b4b; }
-        input { width: 100%; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 6px; font-family: 'Outfit', Arial; font-size: 1rem; }
-        .message { padding: 1rem; border-radius: 6px; margin-bottom: 1rem; display: none; }
-        .message.success { background: #d1fae5; color: #065f46; display: block; }
-        .message.error { background: #fee2e2; color: #7f1d1d; display: block; }
-        .pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
-        .price-card { background: white; padding: 2rem; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 2px solid transparent; }
-        .price-card.featured { border: 2px solid #4f46e5; }
-        .price { font-size: 2.2rem; color: #4f46e5; font-weight: 800; margin: 1rem 0; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); }
-        .modal-content { background: white; margin: 5% auto; padding: 2rem; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-        .close { color: #aaa; float: right; font-size: 2rem; font-weight: bold; cursor: pointer; }
-        
-        footer { background: #1e1b4b; color: white; padding: 4rem 1rem 2rem; text-align: center; }
-        .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 600px; margin: 2rem auto; }
-        .footer-item { background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 10px; }
-        .footer-item h4 { font-size: 0.8rem; opacity: 0.7; text-transform: uppercase; margin-bottom: 0.3rem; }
-        .footer-item p { font-weight: 600; font-size: 0.95rem; }
-        .risk-warning { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 1rem; border-radius: 10px; max-width: 800px; margin: 2rem auto; font-size: 0.9rem; }
-        
-        @media (max-width: 768px) { .markets-grid { grid-template-columns: 1fr; } nav { flex-direction: column; gap: 1rem; } .nav-auth { margin-left: 0; } .discovery-section h2 { font-size: 1.8rem; } .footer-grid { grid-template-columns: 1fr; } .markets-info-grid { grid-template-columns: 1fr; gap: 2rem; } .hero h2 { font-size: 2.5rem; } }
-    </style>
-</head>
-<body>
-    <header>
-        <p class="founder">Built by Gideon Sylvester</p>
+// External script for Flutterwave
+declare global {
+  interface Window {
+    FlutterwaveCheckout: any;
+  }
+}
+
+const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbyOJDbOzm3J-BKgrbxd2_ZFO3CxGkOZVlbbT627l0YPfO60QsOvGLYGvEU9AGkhFo0o/exec';
+const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK-3f5ea8d01747c5d65314e4b3da7c7b6b-X'; 
+
+export default function App() {
+  const [loggedInUser, setLoggedInUser] = useState<any>(null);
+  const [allResults, setAllResults] = useState<any[]>([]);
+  const [selectedDate, setSelectedDate] = useState<any>(null);
+  const [historyDates, setHistoryDates] = useState<any[]>([]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [resultsLoading, setResultsLoading] = useState(true);
+  const [todayPredictions, setTodayPredictions] = useState<any[]>([]);
+  const [todayLoading, setTodayLoading] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [signupMessage, setSignupMessage] = useState({ text: '', type: '' });
+
+  // Refs for scrolling
+  const signupRef = useRef<HTMLDivElement>(null);
+  const pricingRef = useRef<HTMLDivElement>(null);
+  const todayRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    initDates();
+    checkLogin();
+    loadResults();
+    const interval = setInterval(loadResults, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (loggedInUser) {
+      loadTodayPredictions();
+    }
+  }, [loggedInUser]);
+
+  const initDates = () => {
+    const dates = [];
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      dates.push({
+        date: d,
+        label: i === 1 ? 'Yesterday' : `${i} days ago`,
+        formatted: d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+      });
+    }
+    setHistoryDates(dates);
+    setSelectedDate(dates[0]);
+  };
+
+  const checkLogin = () => {
+    const storedUser = localStorage.getItem('prediktUser');
+    if (storedUser) {
+      setLoggedInUser(JSON.parse(storedUser));
+    }
+  };
+
+  const loadResults = async () => {
+    try {
+      const response = await fetch(`${APPS_SCRIPT}?action=getResults`);
+      const data = await response.json();
+      setAllResults(data);
+      setResultsLoading(false);
+    } catch (e) {
+      console.error('Error loading results:', e);
+      setResultsLoading(false);
+    }
+  };
+
+  const loadTodayPredictions = async () => {
+    if (!loggedInUser) return;
+    setTodayLoading(true);
+    try {
+      const response = await fetch(`${APPS_SCRIPT}?action=unlockPicks&email=${encodeURIComponent(loggedInUser.email)}`);
+      const res = await response.json();
+      if (res.status === 'success' && Array.isArray(res.data)) {
+        setTodayPredictions(res.data);
+      }
+      setTodayLoading(false);
+    } catch (e) {
+      console.error('Error loading today predictions:', e);
+      setTodayLoading(false);
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = (document.getElementById('loginEmail') as HTMLInputElement).value;
+    const phone = (document.getElementById('loginPhone') as HTMLInputElement).value;
+    try {
+      const response = await fetch(`${APPS_SCRIPT}?action=checkMember&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`);
+      const data = await response.json();
+      if (data.valid) {
+        const user = { email, phone };
+        setLoggedInUser(user);
+        localStorage.setItem('prediktUser', JSON.stringify(user));
+        setShowLoginModal(false);
+      } else {
+        alert('❌ Account not found.');
+      }
+    } catch (error: any) {
+      alert('Error: ' + error.message);
+    }
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = (document.getElementById('name') as HTMLInputElement).value;
+    const email = (document.getElementById('email') as HTMLInputElement).value;
+    const phone = (document.getElementById('phone') as HTMLInputElement).value;
+    try {
+      await fetch(APPS_SCRIPT, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: `action=signup&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`
+      });
+      setSignupMessage({ text: '✅ Trial activated! Login above.', type: 'success' });
+    } catch (error: any) {
+      setSignupMessage({ text: '❌ Error: ' + error.message, type: 'error' });
+    }
+  };
+
+  const logout = () => {
+    setLoggedInUser(null);
+    localStorage.removeItem('prediktUser');
+    window.location.reload();
+  };
+
+  const scrollTo = (ref: React.RefObject<HTMLDivElement | null>) => {
+    ref.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const makePayment = () => {
+    if (!loggedInUser) {
+      alert("Please login or signup first to upgrade.");
+      scrollTo(signupRef);
+      return;
+    }
+    if (window.FlutterwaveCheckout) {
+      window.FlutterwaveCheckout({
+        public_key: FLUTTERWAVE_PUBLIC_KEY,
+        tx_ref: "PREDIKT_" + Math.floor((Math.random() * 1000000000) + 1),
+        amount: 1000,
+        currency: "NGN",
+        payment_options: "card, banktransfer, ussd",
+        customer: {
+          email: loggedInUser.email,
+          phone_number: loggedInUser.phone || "",
+          name: loggedInUser.name || "Member"
+        },
+        callback: function (data: any) {
+          if (data.status === "successful") {
+            fetch(`${APPS_SCRIPT}?action=paid&email=${encodeURIComponent(loggedInUser.email)}`, { method: 'POST', mode: 'no-cors' }).then(() => {
+              alert("✅ Payment successful! Your account is being upgraded.");
+              window.location.reload();
+            });
+          }
+        },
+        customizations: { title: "PREDIKT AI Premium", description: "30 Days Premium Access" },
+      });
+    }
+  };
+
+  const formatTime = (timeStr: any) => {
+    if (!timeStr) return 'N/A';
+    const str = String(timeStr);
+    if (str.includes('1899-12-30') || str.includes('T')) {
+      try {
+        const date = new Date(str);
+        if (isNaN(date.getTime())) return str;
+        const h = date.getHours().toString().padStart(2, '0');
+        const m = date.getMinutes().toString().padStart(2, '0');
+        return `${h}:${m}`;
+      } catch (e) { return str; }
+    }
+    return str;
+  };
+
+  const groupMatches = (data: any[]) => {
+    const groups: any = {};
+    data.forEach(r => {
+      if (!r || !r.match) return;
+      if (!groups[r.match]) groups[r.match] = { match: r.match, competition: r.competition, kickoff: r.kickoff, hidden: [], familiar: [] };
+      const type = String(r.marketType || '').toUpperCase();
+      if (type.includes('HIDDEN')) groups[r.match].hidden.push(r);
+      else groups[r.match].familiar.push(r);
+    });
+    return groups;
+  };
+
+  const getResultBadge = (res: any) => {
+    const r = String(res || '').toUpperCase().trim();
+    if (r === 'WIN') return <span className="result-badge result-win">WIN</span>;
+    if (r === 'LOSS') return <span className="result-badge result-loss">LOSS</span>;
+    return <span className="result-badge result-pending">PENDING</span>;
+  };
+
+  const filteredResults = allResults.filter(r => {
+    if (!selectedDate) return false;
+    const d = new Date(r.date);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime() === selectedDate.date.getTime();
+  });
+
+  const matchGroups = groupMatches(filteredResults);
+  const todayMatchGroups = groupMatches(todayPredictions);
+
+  let totalMatches = 0;
+  let totalPreds = 0;
+  Object.keys(matchGroups).forEach(k => {
+    const group = matchGroups[k];
+    totalMatches++;
+    totalPreds += (group.hidden.length + group.familiar.length) * 3;
+  });
+
+  return (
+    <div className="min-h-screen bg-[#f8fafc]">
+      <header>
+        <p className="founder">Built by Gideon Sylvester</p>
         <h1>🎯 PREDIKT AI</h1>
-        <p style="font-style: italic;">Patterns don't lie</p>
-        <p style="margin-top: 1rem; font-weight: 600;">⭐ 80-90% High Probability Markets</p>
-    </header>
+        <p className="italic">Patterns don't lie</p>
+        <p className="mt-4 font-semibold">⭐ 80-90% High Probability Markets</p>
+      </header>
 
-    <nav>
+      <nav>
         <a href="#home">Home</a>
         <a href="#results">Results</a>
         <a href="#markets">Markets</a>
         <a href="#pricing">Pricing</a>
-        <a href="#faq">FAQ</a>
+        <a href="#signup">Signup</a>
         <a href="#contact">Contact</a>
-        <div class="nav-auth">
-            <button id="loginBtn" class="btn-login" onclick="openLogin()">Login</button>
-            <button id="logoutBtn" class="btn-logout" onclick="logout()" style="display: none;">Logout</button>
+        <div className="nav-auth">
+          {!loggedInUser ? (
+            <button className="btn-login" onClick={() => setShowLoginModal(true)}>Login</button>
+          ) : (
+            <button className="btn-logout" onClick={logout}>Logout</button>
+          )}
         </div>
-    </nav>
+      </nav>
 
-    <section class="hero" id="home">
-        <div class="container">
-            <h2>Stop Chasing Odds.<br>Start Making <span class="highlight">Smart Decisions.</span></h2>
-            <p class="hero-sub">Get AI-analyzed predictions for 6-24 matches across 7+ global leagues. All predictions in one place.</p>
-            <div class="stats">
-                <div class="stat-box"><div class="stat-number">80-90%</div><p>Win Rate (Hidden Markets)</p></div>
-                <div class="stat-box"><div class="stat-number">50-65%</div><p>Win Rate (Familiar Markets)</p></div>
-                <div class="stat-box"><div class="stat-number">6-24</div><p>Matches Analyzed Daily</p></div>
-            </div>
-            <p style="text-align: center;"><a href="#signup" class="btn">Start Free 7-Day Trial</a></p>
+      <section className="hero" id="home">
+        <div className="container">
+          <h2>Stop Chasing Odds.<br />Start Making <span className="highlight">Smart Decisions.</span></h2>
+          <p className="hero-sub">Get AI-analyzed predictions for 6-24 matches across 7+ global leagues. All predictions in one place.</p>
+          <div className="stats">
+            <div className="stat-box"><div className="stat-number">80-90%</div><p>Win Rate (Hidden Markets)</p></div>
+            <div className="stat-box"><div className="stat-number">50-65%</div><p>Win Rate (Familiar Markets)</p></div>
+            <div className="stat-box"><div className="stat-number">6-24</div><p>Matches Analyzed Daily</p></div>
+          </div>
+          <p className="text-center">
+            {loggedInUser ? (
+              <button onClick={() => scrollTo(todayRef)} className="btn">Unlock 🔓 Today's Prediction Now</button>
+            ) : (
+              <button onClick={() => scrollTo(signupRef)} className="btn">Unlock 🔓 Today's Prediction Now</button>
+            )}
+          </p>
+          <p className="mt-4 text-sm text-slate-500 font-medium text-center">Only available to trial & premium users</p>
         </div>
-    </section>
+      </section>
 
-    <section id="results" class="section">
-        <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
-                <div style="text-align: left;">
-                    <h2 style="text-align: left; margin-bottom: 0.5rem;">Prediction Results</h2>
-                    <p id="selectedDateText" style="color: #64748b; font-weight: 500;">Results for Yesterday</p>
-                </div>
-                <div class="date-picker-container">
-                    <button id="datePickerBtn" class="date-picker-btn" onclick="toggleDatePicker()">
-                        <span id="currentDateLabel">Yesterday</span>
-                        <span style="font-size: 0.8rem; margin-left: 0.5rem;">▼</span>
-                    </button>
-                    <div id="datePickerDropdown" class="date-picker-dropdown"></div>
-                </div>
+      <section id="results" className="section">
+        <div className="container">
+          <div className="flex justify-between items-end flex-wrap gap-4 mb-8">
+            <div className="text-left">
+              <h2 className="text-left mb-2">Prediction Results</h2>
+              <p className="text-[#64748b] font-medium">Results for {selectedDate?.formatted || 'Yesterday'}</p>
             </div>
+            <div className="date-picker-container">
+              <button className="date-picker-btn" onClick={() => setShowDatePicker(!showDatePicker)}>
+                <span>{selectedDate?.label || 'Yesterday'}</span>
+                <span className="text-[0.8rem] ml-2">▼</span>
+              </button>
+              <div className={`date-picker-dropdown ${showDatePicker ? 'show' : ''}`}>
+                {historyDates.map((d, index) => (
+                  <div 
+                    key={index}
+                    className={`date-item ${selectedDate?.date.getTime() === d.date.getTime() ? 'active' : ''}`} 
+                    onClick={() => {
+                      setSelectedDate(d);
+                      setShowDatePicker(false);
+                    }}
+                  >
+                    <span className="date-main">{d.formatted}</span>
+                    <span className="date-sub">{d.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
 
-            <div id="resultsStats" style="background: #f1f5f9; padding: 0.75rem 1.5rem; border-radius: 100px; display: inline-flex; align-items: center; gap: 1rem; margin-bottom: 2rem; font-size: 0.9rem; color: #475569; font-weight: 600;">
-                <span id="matchCount">0 matches analyzed</span>
-                <span style="opacity: 0.3;">|</span>
-                <span id="predictionCount">0 market predictions</span>
-            </div>
+          <div className="bg-[#f1f5f9] px-6 py-3 rounded-full inline-flex items-center gap-4 mb-8 text-sm text-[#475569] font-semibold">
+            <span>{totalMatches} matches analyzed</span>
+            <span className="opacity-30">|</span>
+            <span>{totalPreds} market predictions</span>
+          </div>
 
-            <div id="resultsLoading" style="text-align: center; color: #4f46e5; font-weight: 600; padding: 2rem;">Loading...</div>
-            <div id="resultsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;"></div>
-            
-            <div id="noResults" style="display: none; text-align: center; padding: 4rem 2rem; background: #f8fafc; border-radius: 20px; border: 2px dashed #e2e8f0;">
-                <p style="font-size: 1.2rem; color: #64748b; font-weight: 500;">📊 No results found for this date.</p>
+          {resultsLoading ? (
+            <div className="text-center text-[#4f46e5] font-semibold py-8">Loading...</div>
+          ) : filteredResults.length === 0 ? (
+            <div className="text-center py-16 bg-[#f8fafc] rounded-[20px] border-2 border-dashed border-[#e2e8f0]">
+              <p className="text-lg text-[#64748b] font-medium">📊 No results found for this date.</p>
             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Object.keys(matchGroups).map(k => (
+                <MatchCard key={k} group={matchGroups[k]} formatTime={formatTime} getResultBadge={getResultBadge} />
+              ))}
+            </div>
+          )}
 
-            <div id="premiumHistoryCTA" style="display: none; margin-top: 3rem; text-align: center; padding: 2rem; background: linear-gradient(135deg, #f0f4ff 0%, #e8f0ff 100%); border-radius: 16px; border: 1px solid #d0dfff;">
-                <p style="color: #1e1b4b; font-weight: 600; margin-bottom: 1rem;">Want to see more than 7 days of history?</p>
-                <button onclick="scrollTo('#pricing')" class="btn" style="padding: 0.6rem 1.5rem; font-size: 0.9rem;">Upgrade to Premium</button>
+          {!loggedInUser && (
+            <div className="mt-12 text-center p-8 bg-gradient-to-br from-[#f0f4ff] to-[#e8f0ff] rounded-2xl border border-[#d0dfff]">
+              <p className="text-[#1e1b4b] font-semibold mb-4">Want to see more than 7 days of history?</p>
+              <button onClick={() => scrollTo(pricingRef)} className="btn text-sm px-6 py-2.5">Upgrade to Premium</button>
             </div>
+          )}
         </div>
-    </section>
+      </section>
 
-    <section class="section alt" id="todayPredictions" style="display: none;">
-        <div class="container">
-            <div class="member-badge">🎯 Member Only</div>
+      {loggedInUser && (
+        <section className="section alt" id="todayPredictions" ref={todayRef}>
+          <div className="container">
+            <div className="member-badge">🎯 Member Only</div>
             <h2>Today's Live Predictions</h2>
-            <div id="todayLoading" style="text-align: center; color: #4f46e5; font-weight: 600; padding: 2rem;">Loading...</div>
-            <div id="todayContainer" style="display: none;"></div>
-        </div>
-    </section>
+            {todayLoading ? (
+              <div className="text-center text-[#4f46e5] font-semibold py-8">Loading...</div>
+            ) : todayPredictions.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">📊 No predictions yet.</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {Object.keys(todayMatchGroups).map(k => (
+                  <MatchCard key={k} group={todayMatchGroups[k]} formatTime={formatTime} getResultBadge={getResultBadge} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
-    <section class="section container" id="markets">
-        <div class="discovery-section">
-            <h2>Most Bettors Miss These Markets</h2>
-            <h3>Simply because they don't know where to find them.</h3>
-            <p>Get exclusive access to 80-90% win rate hidden markets that most bettors never discover. Our AI identifies these opportunities daily.</p>
-            <a href="https://reffpa.com/L?tag=d_4237102m_1599c_&site=4237102&ad=1599&r=registration" target="_blank" class="btn btn-green">Find Hidden Markets Now</a>
-        </div>
-
-        <h2 style="font-size: 2.8rem; margin-top: 4rem;">Two Market Types</h2>
-        <div class="markets-info-grid">
-            <div class="market-info-box">
-                <h3>🎯 Hidden Markets</h3>
-                <div class="rate">80-90%</div>
-                <p>Overlooked opportunities most don't analyze. Better odds, higher win rates.</p>
-                <p class="examples"><strong>Examples:</strong> Over 17.5 Fouls • Over 3.5 Saves • No Injury Time Goal</p>
-            </div>
-            <div class="market-info-box">
-                <h3>📌 Familiar Markets</h3>
-                <div class="rate" style="color: #10b981;">50-65%</div>
-                <p>Popular options. Easy to understand but highly competitive.</p>
-                <p class="examples"><strong>Examples:</strong> Home Win • Over 1.5 Goals • Both Teams Score</p>
-            </div>
-        </div>
-    </section>
-    <section id="pricing" class="section alt">
-        <div class="container">
-            <h2>Simple Pricing</h2>
-            <div class="pricing">
-                <div class="price-card featured">
-                    <h3>🎯 Free Trial</h3>
-                    <div class="price">7 Days</div>
-                    <a href="#signup" class="btn">Start Trial Now</a>
-                </div>
-                <div class="price-card">
-                    <h3>💎 Premium</h3>
-                    <div class="price">₦1,000<span style="font-size: 0.9rem;">/month</span></div>
-                    <button onclick="makePayment()" class="btn btn-green">Upgrade Now</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="signup" class="section">
-        <div class="container">
-            <h2>Start Your Free 7-Day Trial</h2>
-            <div class="login-section">
-                <div id="message" class="message"></div>
-                <form id="signupForm">
-                    <div class="form-group"><label>Full Name *</label><input type="text" id="name" required></div>
-                    <div class="form-group"><label>Email Address *</label><input type="email" id="email" required></div>
-                    <div class="form-group"><label>Phone Number *</label><input type="tel" id="phone" required></div>
-                    <button type="submit" class="btn" style="width: 100%;">Activate Trial</button>
-                </form>
-            </div>
-        </div>
-    </section>
-
-    <footer id="contact">
-        <h2>Let's Connect</h2>
-        <div class="footer-grid">
-            <div class="footer-item">
-                <h4>Telegram</h4>
-                <p><a href="https://t.me/PrediktAI" style="color: white; text-decoration: none;">@PrediktAI</a></p>
-            </div>
-            <div class="footer-item">
-                <h4>Phone</h4>
-                <p>+234 807 693 9887</p>
-            </div>
-            <div class="footer-item">
-                <h4>Email</h4>
-                <p>prediktaisystems@gmail.com</p>
-            </div>
-            <div class="footer-item">
-                <h4>Location</h4>
-                <p>FCT, Abuja, Nigeria</p>
-            </div>
+      <section className="section container" id="markets">
+        <div className="discovery-section">
+          <h2>Most Bettors Miss These Markets</h2>
+          <h3>Simply because they don't know where to find them.</h3>
+          <p>Get exclusive access to 80-90% win rate hidden markets that most bettors never discover. Our AI identifies these opportunities daily.</p>
+          <a href="https://reffpa.com/L?tag=d_4237102m_1599c_&site=4237102&ad=1599&r=registration" target="_blank" className="btn btn-green">Find Hidden Markets Now</a>
         </div>
 
-        <div class="risk-warning">
-            ⚠️ Gambling involves risk. Please bet responsibly. Our predictions are based on AI patterns but do not guarantee outcomes. Only bet what you can afford to lose.
+        <h2 className="text-[2.8rem] mt-16">Two Market Types</h2>
+        <div className="markets-info-grid">
+          <div className="market-info-box">
+            <h3>🎯 Hidden Markets</h3>
+            <div className="rate">80-90%</div>
+            <p>Overlooked opportunities most don't analyze. Better odds, higher win rates.</p>
+            <p className="examples"><strong>Examples:</strong> Over 17.5 Fouls • Over 3.5 Saves • No Injury Time Goal</p>
+          </div>
+          <div className="market-info-box">
+            <h3>📌 Familiar Markets</h3>
+            <div className="rate text-[#10b981]">50-65%</div>
+            <p>Popular options. Easy to understand but highly competitive.</p>
+            <p className="examples"><strong>Examples:</strong> Home Win • Over 1.5 Goals • Both Teams Score</p>
+          </div>
         </div>
+      </section>
 
-        <p style="margin-top: 2rem; opacity: 0.6;">🎯 PREDIKT AI &copy; 2026. Patterns don't lie. 🇳🇬</p>
-    </footer>
+      <section id="pricing" className="section alt" ref={pricingRef}>
+        <div className="container">
+          <h2>Simple Pricing</h2>
+          <div className="pricing">
+            <div className="price-card featured">
+              <h3>🎯 Free Trial</h3>
+              <div className="price">7 Days</div>
+              <button onClick={() => scrollTo(signupRef)} className="btn">Start Trial Now</button>
+            </div>
+            <div className="price-card">
+              <h3>💎 Premium</h3>
+              <div className="price">₦1,000<span className="text-sm">/month</span></div>
+              <button onClick={makePayment} className="btn btn-green">Upgrade Now</button>
+            </div>
+          </div>
+        </div>
+      </section>
 
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeLogin()">&times;</span>
-            <h2>Login</h2>
-            <form id="loginForm">
-                <div class="form-group"><label>Email *</label><input type="email" id="loginEmail" required></div>
-                <div class="form-group"><label>Phone *</label><input type="tel" id="loginPhone" required></div>
-                <button type="submit" class="btn" style="width: 100%;">Login</button>
+      <section id="signup" className="section" ref={signupRef}>
+        <div className="container">
+          <h2>Start Your Free 7-Day Trial</h2>
+          <div className="login-section">
+            {signupMessage.text && (
+              <div className={`message ${signupMessage.type === 'success' ? 'success' : 'error'}`}>
+                {signupMessage.text}
+              </div>
+            )}
+            <form onSubmit={handleSignup}>
+              <div className="form-group"><label>Full Name *</label><input type="text" id="name" required /></div>
+              <div className="form-group"><label>Email Address *</label><input type="email" id="email" required /></div>
+              <div className="form-group"><label>Phone Number *</label><input type="tel" id="phone" required /></div>
+              <button type="submit" className="btn w-full">Activate Trial</button>
             </form>
+          </div>
         </div>
+      </section>
+
+      <footer id="contact">
+        <h2>Let's Connect</h2>
+        <div className="footer-grid">
+          <div className="footer-item">
+            <h4>Telegram</h4>
+            <p><a href="https://t.me/PrediktAI" className="text-white no-underline">@PrediktAI</a></p>
+          </div>
+          <div className="footer-item">
+            <h4>Phone</h4>
+            <p>+234 807 693 9887</p>
+          </div>
+          <div className="footer-item">
+            <h4>Email</h4>
+            <p>prediktaisystems@gmail.com</p>
+          </div>
+          <div className="footer-item">
+            <h4>Location</h4>
+            <p>FCT, Abuja, Nigeria</p>
+          </div>
+        </div>
+
+        <div className="risk-warning">
+          ⚠️ Gambling involves risk. Please bet responsibly. Our predictions are based on AI patterns but do not guarantee outcomes. Only bet what you can afford to lose.
+        </div>
+
+        <p className="mt-8 opacity-60">🎯 PREDIKT AI &copy; 2026. Patterns don't lie. 🇳🇬</p>
+      </footer>
+
+      {showLoginModal && (
+        <div className="modal block">
+          <div className="modal-content">
+            <span className="close" onClick={() => setShowLoginModal(false)}>&times;</span>
+            <h2>Login</h2>
+            <form onSubmit={handleLogin}>
+              <div className="form-group"><label>Email *</label><input type="email" id="loginEmail" required /></div>
+              <div className="form-group"><label>Phone *</label><input type="tel" id="loginPhone" required /></div>
+              <button type="submit" className="btn w-full">Login</button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
 
-    <script>
-        const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbyOJDbOzm3J-BKgrbxd2_ZFO3CxGkOZVlbbT627l0YPfO60QsOvGLYGvEU9AGkhFo0o/exec';
-        // IMPORTANT: Replace with your actual Flutterwave Public Key
-        const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK-c72293a1394c2928a81a28860029ec04-X'; 
-        
-        let loggedInUser = null;
-        let allResults = [];
-        let selectedDate = null;
-        let historyDates = [];
+function MatchCard({ group, formatTime, getResultBadge }: any) {
+  const cleanTime = formatTime(group.kickoff);
+  const headerText = `${group.match} | ${group.competition || 'N/A'} | ${cleanTime}`;
 
-        function initDates() {
-            historyDates = [];
-            for (let i = 1; i <= 7; i++) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                d.setHours(0,0,0,0);
-                historyDates.push({
-                    date: d,
-                    label: i === 1 ? 'Yesterday' : `${i} days ago`,
-                    formatted: d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
-                });
-            }
-            selectedDate = historyDates[0];
-            renderDatePicker();
-        }
-
-        function toggleDatePicker() {
-            document.getElementById('datePickerDropdown').classList.toggle('show');
-        }
-
-        function renderDatePicker() {
-            const dropdown = document.getElementById('datePickerDropdown');
-            dropdown.innerHTML = historyDates.map((d, index) => `
-                <div class="date-item ${selectedDate.date.getTime() === d.date.getTime() ? 'active' : ''}" onclick="selectDate(${index})">
-                    <span class="date-main">${d.formatted}</span>
-                    <span class="date-sub">${d.label}</span>
-                </div>
-            `).join('');
-            document.getElementById('currentDateLabel').textContent = selectedDate.label;
-            document.getElementById('selectedDateText').textContent = `Results for ${selectedDate.formatted}`;
-        }
-
-        function selectDate(index) {
-            selectedDate = historyDates[index];
-            renderDatePicker();
-            toggleDatePicker();
-            renderFilteredResults();
-        }
-
-        function checkLogin() {
-            const storedUser = localStorage.getItem('prediktUser');
-            if (storedUser) {
-                loggedInUser = JSON.parse(storedUser);
-                updateUI();
-                loadTodayPredictions();
-            }
-        }
-
-        function updateUI() {
-            const loginBtn = document.getElementById('loginBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const todaySection = document.getElementById('todayPredictions');
-            const premiumCTA = document.getElementById('premiumHistoryCTA');
-            if (loggedInUser) {
-                loginBtn.style.display = 'none'; logoutBtn.style.display = 'block';
-                todaySection.style.display = 'block';
-                premiumCTA.style.display = 'none';
-            } else {
-                loginBtn.style.display = 'block'; logoutBtn.style.display = 'none';
-                todaySection.style.display = 'none';
-                premiumCTA.style.display = 'block';
-            }
-        }
-
-        function openLogin() { document.getElementById('loginModal').style.display = 'block'; }
-        function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
-        function logout() { loggedInUser = null; localStorage.removeItem('prediktUser'); updateUI(); location.reload(); }
-        function scrollTo(id) { document.querySelector(id).scrollIntoView({ behavior: 'smooth' }); }
-
-        function makePayment() {
-            if (!loggedInUser) { alert("Please login or signup first to upgrade."); scrollTo("#signup"); return; }
-            FlutterwaveCheckout({
-                public_key: FLUTTERWAVE_PUBLIC_KEY,
-                tx_ref: "PREDIKT_" + Math.floor((Math.random() * 1000000000) + 1),
-                amount: 1000, currency: "NGN", payment_options: "card, banktransfer, ussd",
-                customer: { email: loggedInUser.email, phone_number: loggedInUser.phone || "", name: loggedInUser.name || "Member" },
-                callback: function (data) {
-                    if (data.status === "successful") {
-                        fetch(APPS_SCRIPT + '?action=paid&email=' + encodeURIComponent(loggedInUser.email), { method: 'POST', mode: 'no-cors' }).then(() => {
-                            alert("✅ Payment successful! Your account is being upgraded."); location.reload();
-                        });
-                    }
-                },
-                customizations: { title: "PREDIKT AI Premium", description: "30 Days Premium Access" },
-            });
-        }
-
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const phone = document.getElementById('loginPhone').value;
-            try {
-                const response = await fetch(APPS_SCRIPT + '?action=checkMember&email=' + encodeURIComponent(email) + '&phone=' + encodeURIComponent(phone));
-                const data = await response.json();
-                if (data.valid) {
-                    loggedInUser = { email, phone };
-                    localStorage.setItem('prediktUser', JSON.stringify(loggedInUser));
-                    closeLogin(); updateUI(); loadTodayPredictions();
-                } else { alert('❌ Account not found.'); }
-            } catch (error) { alert('Error: ' + error.message); }
-        });
-
-        document.getElementById('signupForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
-            const msg = document.getElementById('message');
-            try {
-                await fetch(APPS_SCRIPT, {
-                    method: 'POST', mode: 'no-cors',
-                    body: `action=signup&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`
-                });
-                msg.className = 'message success'; msg.textContent = '✅ Trial activated! Login above.';
-            } catch (error) { msg.className = 'message error'; msg.textContent = '❌ Error: ' + error.message; }
-        });
-
-        function formatTime(timeStr) {
-            if (!timeStr) return 'N/A';
-            const str = String(timeStr);
-            if (str.includes('1899-12-30') || str.includes('T')) {
-                try {
-                    const date = new Date(str);
-                    if (isNaN(date.getTime())) return str;
-                    const h = date.getHours().toString().padStart(2, '0');
-                    const m = date.getMinutes().toString().padStart(2, '0');
-                    return `${h}:${m}`;
-                } catch (e) { return str; }
-            }
-            return str;
-        }
-
-        async function loadResults() {
-            try {
-                const response = await fetch(APPS_SCRIPT + '?action=getResults');
-                allResults = await response.json();
-                renderFilteredResults();
-            } catch (e) { document.getElementById('resultsLoading').innerHTML = '❌ Error loading results.'; }
-        }
-
-        function renderFilteredResults() {
-            const container = document.getElementById('resultsContainer');
-            const loading = document.getElementById('resultsLoading');
-            const noResults = document.getElementById('noResults');
-            const matchCountEl = document.getElementById('matchCount');
-            const predCountEl = document.getElementById('predictionCount');
-
-            if (!Array.isArray(allResults)) return;
-
-            const filtered = allResults.filter(r => {
-                const d = new Date(r.date);
-                d.setHours(0,0,0,0);
-                return d.getTime() === selectedDate.date.getTime();
-            });
-
-            container.innerHTML = '';
-            if (filtered.length === 0) {
-                loading.style.display = 'none'; container.style.display = 'none'; noResults.style.display = 'block';
-                matchCountEl.textContent = '0 matches analyzed'; predCountEl.textContent = '0 market predictions';
-                return;
-            }
-
-            const matchGroups = groupMatches(filtered);
-            let totalMatches = 0;
-            let totalPreds = 0;
-
-            Object.keys(matchGroups).forEach(k => {
-                const group = matchGroups[k];
-                container.appendChild(createMatchCard(group));
-                totalMatches++;
-                totalPreds += (group.hidden.length + group.familiar.length) * 3;
-            });
-
-            matchCountEl.textContent = `${totalMatches} matches analyzed`;
-            predCountEl.textContent = `${totalPreds} market predictions`;
-            loading.style.display = 'none'; noResults.style.display = 'none'; container.style.display = 'grid';
-        }
-
-        async function loadTodayPredictions() {
-            if (!loggedInUser) return;
-            try {
-                const response = await fetch(APPS_SCRIPT + '?action=unlockPicks&email=' + encodeURIComponent(loggedInUser.email));
-                const res = await response.json();
-                const container = document.getElementById('todayContainer');
-                const loading = document.getElementById('todayLoading');
-                if (res.status !== 'success' || !Array.isArray(res.data) || res.data.length === 0) {
-                    loading.innerHTML = '📊 No predictions yet.'; return;
-                }
-                container.innerHTML = '';
-                const matchGroups = groupMatches(res.data);
-                Object.keys(matchGroups).forEach(k => container.appendChild(createMatchCard(matchGroups[k])));
-                loading.style.display = 'none'; container.style.display = 'grid';
-            } catch (e) { document.getElementById('todayLoading').innerHTML = '❌ Error.'; }
-        }
-
-        function groupMatches(data) {
-            const groups = {};
-            data.forEach(r => {
-                if (!r || !r.match) return;
-                if (!groups[r.match]) groups[r.match] = { match: r.match, competition: r.competition, kickoff: r.kickoff, hidden: [], familiar: [] };
-                const type = String(r.marketType || '').toUpperCase();
-                if (type.includes('HIDDEN')) groups[r.match].hidden.push(r);
-                else groups[r.match].familiar.push(r);
-            });
-            return groups;
-        }
-
-        function createMatchCard(group) {
-            const card = document.createElement('div'); card.className = 'result-card';
-            const cleanTime = formatTime(group.kickoff);
-            const headerText = `${group.match} | ${group.competition || 'N/A'} | ${cleanTime}`;
-            let html = `<div class="match-header"><div class="match-title">${headerText}</div></div><div class="markets-grid">`;
-            if (group.hidden.length > 0) {
-                html += `<div class="market-section hidden-section"><h4>🎯 Hidden Markets</h4>`;
-                group.hidden.forEach(r => {
-                    [1,2,3].forEach(i => { if(r['market'+i]) html += `<div class="market-item"><span class="market-name">${r['market'+i]}</span><span class="market-conf">${r['conf'+i]}%</span>${getResultBadge(r['result'+i])}</div>`; });
-                });
-                html += `</div>`;
-            }
-            if (group.familiar.length > 0) {
-                html += `<div class="market-section familiar-section"><h4>📌 Familiar Markets</h4>`;
-                group.familiar.forEach(r => {
-                    [1,2,3].forEach(i => { if(r['market'+i]) html += `<div class="market-item"><span class="market-name">${r['market'+i]}</span><span class="market-conf">${r['conf'+i]}%</span>${getResultBadge(r['result'+i])}</div>`; });
-                });
-                html += `</div>`;
-            }
-            html += `</div>`; card.innerHTML = html; return card;
-        }
-
-        function getResultBadge(res) {
-            const r = String(res || '').toUpperCase().trim();
-            if (r === 'WIN') return '<span class="result-badge result-win">WIN</span>';
-            if (r === 'LOSS') return '<span class="result-badge result-loss">LOSS</span>';
-            return '<span class="result-badge result-pending">PENDING</span>';
-        }
-
-        window.onclick = function(event) {
-            if (!event.target.closest('.date-picker-container')) {
-                const dropdown = document.getElementById('datePickerDropdown');
-                if (dropdown && dropdown.classList.contains('show')) dropdown.classList.remove('show');
-            }
-        }
-
-        initDates(); loadResults(); checkLogin();
-        setInterval(loadResults, 30000);
-    </script>
-</body>
-</html>
+  return (
+    <div className="result-card">
+      <div className="match-header">
+        <div className="match-title">{headerText}</div>
+      </div>
+      <div className="markets-grid">
+        {group.hidden.length > 0 && (
+          <div className="market-section hidden-section">
+            <h4>🎯 Hidden Markets</h4>
+            {group.hidden.map((r: any, idx: number) => (
+              <React.Fragment key={idx}>
+                {[1, 2, 3].map(i => {
+                  const market = r[`market${i}`];
+                  const conf = r[`conf${i}`];
+                  const result = r[`result${i}`];
+                  if (!market) return null;
+                  return (
+                    <div key={i} className="market-item">
+                      <span className="market-name">{market}</span>
+                      <span className="market-conf">{conf}%</span>
+                      {getResultBadge(result)}
+                    </div>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+          </div>
+        )}
+        {group.familiar.length > 0 && (
+          <div className="market-section familiar-section">
+            <h4>📌 Familiar Markets</h4>
+            {group.familiar.map((r: any, idx: number) => (
+              <React.Fragment key={idx}>
+                {[1, 2, 3].map(i => {
+                  const market = r[`market${i}`];
+                  const conf = r[`conf${i}`];
+                  const result = r[`result${i}`];
+                  if (!market) return null;
+                  return (
+                    <div key={i} className="market-item">
+                      <span className="market-name">{market}</span>
+                      <span className="market-conf">{conf}%</span>
+                      {getResultBadge(result)}
+                    </div>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
