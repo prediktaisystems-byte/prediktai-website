@@ -34,7 +34,6 @@
         .nav-auth button { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: 'Outfit'; transition: transform 0.2s; }
         .btn-login { background: var(--primary); color: white; }
         .btn-logout { background: #ef4444; color: white; }
-        .nav-auth button:active { transform: scale(0.95); }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
         
@@ -51,19 +50,15 @@
         .btn { background: var(--primary); color: white; padding: 1.2rem 2.5rem; border-radius: 16px; text-decoration: none; font-weight: 800; font-size: 1.1rem; display: inline-block; border: none; cursor: pointer; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3); transition: all 0.3s; }
         .btn:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(79, 70, 229, 0.4); }
         .btn-green { background: var(--accent); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); }
-        .btn-green:hover { box-shadow: 0 15px 30px rgba(16, 185, 129, 0.4); }
 
         .section { padding: 6rem 0; }
         .section.alt { background: #f1f5f9; }
         .section h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 3rem; letter-spacing: -1px; }
 
-        /* Results & Cards */
-        .result-card { background: white; border-radius: 24px; padding: 1.5rem; box-shadow: var(--shadow); border: 1px solid #f1f5f9; transition: transform 0.3s; }
-        .result-card:hover { transform: translateY(-5px); }
+        .result-card { background: white; border-radius: 24px; padding: 1.5rem; box-shadow: var(--shadow); border: 1px solid #f1f5f9; }
         .match-header { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #f1f5f9; }
         .match-title { font-weight: 800; font-size: 1.1rem; color: #0f172a; }
         
-        .market-section h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
         .market-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; background: #f8fafc; border-radius: 12px; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; }
         .market-conf { color: var(--primary); font-weight: 800; }
         
@@ -72,34 +67,25 @@
         .result-loss { background: #fee2e2; color: #991b1b; }
         .result-pending { background: #f1f5f9; color: #475569; }
 
-        /* Pricing */
         .pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 900px; margin: 0 auto; }
-        .price-card { background: white; padding: 3rem 2rem; border-radius: 32px; box-shadow: var(--shadow); text-align: center; border: 2px solid transparent; }
-        .price-card.featured { border-color: var(--primary); position: relative; }
-        .price-card h3 { font-size: 1.5rem; margin-bottom: 1rem; }
-        .price-card .price { font-size: 3rem; font-weight: 800; margin-bottom: 2rem; color: #0f172a; }
+        .price-card { background: white; padding: 3rem 2rem; border-radius: 32px; box-shadow: var(--shadow); text-align: center; }
+        .price-card.featured { border: 2px solid var(--primary); position: relative; }
 
-        /* Forms */
         .login-section { background: white; padding: 3rem; border-radius: 32px; box-shadow: var(--shadow); max-width: 500px; margin: 0 auto; }
         .form-group { margin-bottom: 1.5rem; text-align: left; }
         .form-group label { display: block; font-weight: 700; margin-bottom: 0.5rem; font-size: 0.9rem; color: #475569; }
-        .form-group input { width: 100%; padding: 1rem; border: 2px solid #f1f5f9; border-radius: 12px; font-family: 'Outfit'; font-size: 1rem; transition: border-color 0.2s; }
-        .form-group input:focus { outline: none; border-color: var(--primary); }
+        .form-group input { width: 100%; padding: 1rem; border: 2px solid #f1f5f9; border-radius: 12px; font-family: 'Outfit'; font-size: 1rem; }
 
-        /* Footer */
         footer { background: #0f172a; color: white; padding: 6rem 1rem 3rem; text-align: center; }
         .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 3rem; margin-bottom: 4rem; }
-        .footer-item h4 { margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; opacity: 0.6; }
         .risk-warning { background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 20px; font-size: 0.9rem; max-width: 800px; margin: 0 auto; opacity: 0.8; }
 
-        /* Modal */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); }
         .modal-content { background: white; margin: 10% auto; padding: 3rem; border-radius: 32px; width: 90%; max-width: 450px; position: relative; }
         .close { position: absolute; right: 1.5rem; top: 1.5rem; font-size: 2rem; cursor: pointer; opacity: 0.5; }
 
         @media (max-width: 768px) {
             .hero h2 { font-size: 2.5rem; }
-            header h1 { font-size: 2.2rem; }
         }
     </style>
 </head>
@@ -161,10 +147,8 @@
                     <!-- Dates populated by JS -->
                 </select>
             </div>
-
-            <div id="resultsGrid" class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
-                <!-- Results populated by JS -->
-                <div style="text-align: center; grid-column: 1/-1; padding: 4rem;">Loading results...</div>
+            <div id="resultsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
+                <div style="grid-column: 1/-1; text-align: center; padding: 4rem;">Loading results...</div>
             </div>
         </div>
     </section>
@@ -173,18 +157,15 @@
         <div class="container">
             <div style="background: #4f46e5; color: white; display: inline-block; padding: 0.4rem 1rem; border-radius: 12px; font-weight: 800; font-size: 0.8rem; margin-bottom: 1rem;">🎯 MEMBER ONLY</div>
             <h2>Today's Live Predictions</h2>
-            <div id="todayGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
-                <!-- Today's picks populated by JS -->
-            </div>
+            <div id="todayGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;"></div>
         </div>
     </section>
 
     <section id="markets" class="section">
         <div class="container">
-            <div style="background: #f1f5f9; padding: 4rem; border-radius: 40px; text-align: center; margin-bottom: 4rem;">
+            <div style="background: #f1f5f9; padding: 4rem; border-radius: 40px; text-align: center;">
                 <h2 style="margin-bottom: 1rem;">Most Bettors Miss These Markets</h2>
                 <h3 style="color: #4f46e5; margin-bottom: 2rem;">Simply because they don't know where to find them.</h3>
-                <p style="max-width: 800px; margin: 0 auto 2.5rem; font-size: 1.1rem;">Get exclusive access to 80-90% win rate hidden markets that most bettors never discover. Our AI identifies these opportunities daily.</p>
                 <a href="https://reffpa.com/L?tag=d_4237102m_1599c_&site=4237102&ad=1599&r=registration" target="_blank" class="btn btn-green">Find Hidden Markets Now</a>
             </div>
         </div>
@@ -231,7 +212,7 @@
                 <div class="footer-item"><h4>Email</h4><p style="font-weight: 700;">prediktaisystems@gmail.com</p></div>
                 <div class="footer-item"><h4>Location</h4><p style="font-weight: 700;">FCT, Abuja, Nigeria</p></div>
             </div>
-            <div class="risk-warning">⚠️ Gambling involves risk. Please bet responsibly. Our predictions are based on AI patterns but do not guarantee outcomes. Only bet what you can afford to lose.</div>
+            <div class="risk-warning">⚠️ Gambling involves risk. Please bet responsibly. Our predictions are based on AI patterns but do not guarantee outcomes.</div>
             <p style="margin-top: 4rem; opacity: 0.5; font-size: 0.8rem;">🎯 PREDIKT AI &copy; 2026. Patterns don't lie. 🇳🇬</p>
         </div>
     </footer>
@@ -327,7 +308,7 @@
                 if (list.length === 0) return '';
                 return `
                     <div class="market-section">
-                        <h4>${icon} ${title}</h4>
+                        <h4 style="font-size: 0.8rem; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem;">${icon} ${title}</h4>
                         ${list.map(r => [1,2,3].map(i => r[`market${i}`] ? `
                             <div class="market-item">
                                 <span>${r[`market${i}`]}</span>
@@ -341,7 +322,7 @@
 
             return `
                 <div class="result-card">
-                    <div class="match-header"><div class="match-title">${g.match}</div><div style="font-size: 0.8rem; color: #64748b; margin-top: 0.3rem;">${g.competition}</div></div>
+                    <div class="match-header"><div class="match-title">${g.match}</div><div style="font-size: 0.8rem; color: #64748b;">${g.competition}</div></div>
                     ${renderMarkets(g.hidden, 'Hidden Markets', '🎯')}
                     ${renderMarkets(g.familiar, 'Familiar Markets', '📌')}
                 </div>
@@ -363,19 +344,29 @@
             } catch (e) { alert('Login error.'); }
         }
 
+        // --- FIXED SIGNUP FUNCTION ---
         async function handleSignup(e) {
             e.preventDefault();
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const phone = document.getElementById('phone').value;
             const msg = document.getElementById('signupMsg');
+            
+            // FIX: Pass parameters in the URL for Google Apps Script compatibility
+            const url = `${APPS_SCRIPT}?action=signup&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`;
+            
             try {
-                await fetch(APPS_SCRIPT, { method: 'POST', mode: 'no-cors', body: `action=signup&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}` });
+                // Using POST with parameters in the URL is the most reliable way for Apps Script
+                await fetch(url, { method: 'POST', mode: 'no-cors' });
+                
                 msg.style.display = 'block';
                 msg.style.background = '#dcfce7';
                 msg.style.color = '#166534';
-                msg.textContent = '✅ Trial activated! Login above.';
-            } catch (e) { alert('Signup error.'); }
+                msg.textContent = '✅ Congratulations! Trial activated. Login above.';
+                e.target.reset(); // Clear the form
+            } catch (e) { 
+                alert('Signup error. Please check your connection.'); 
+            }
         }
 
         async function loadTodayPredictions() {
