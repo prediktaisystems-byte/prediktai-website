@@ -337,10 +337,9 @@
                 `;
             };
 
-            // FIX: Extract HH:mm from ISO string (e.g., 1899-12-30T15:00:00.000Z -> 15:00)
-            const kickoffTime = g.kickoff && String(g.kickoff).includes('T') 
-                ? String(g.kickoff).split('T')[1].substring(0, 5) 
-                : g.kickoff;
+            // IMPROVED: Robust regex to extract HH:mm from any string format
+            const timeMatch = g.kickoff ? String(g.kickoff).match(/\d{2}:\d{2}/) : null;
+            const kickoffTime = timeMatch ? timeMatch[0] : (g.kickoff || '00:00');
 
             return `
                 <div class="result-card">
@@ -434,4 +433,4 @@
         init();
     </script>
 </body>
-    </html>
+</html>
