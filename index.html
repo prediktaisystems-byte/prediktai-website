@@ -6,6 +6,11 @@
     <title>PREDIKT AI - AI Football Market Analysis</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://checkout.flutterwave.com/v3.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-3QQ5W2XE4Y"></script>
 <script>
@@ -244,8 +249,24 @@
                 <button type="submit" class="btn" style="width: 100%;">Login</button>
             </form>
         </div>
-    </div>
-    <script>
+                        </div>
+                        <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyANiFQjhKNtCWYFdibEvm_HAbtcmVwjq00",
+          authDomain: "gen-lang-client-0026790187.firebaseapp.com",
+          projectId: "gen-lang-client-0026790187",
+          storageBucket: "gen-lang-client-0026790187.firebasestorage.app",
+          messagingSenderId: "173723999209",
+          appId: "1:173723999209:web:e811b43d1030e135c68978"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const messaging = firebase.messaging();
+
         const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbyCWnuw2kFM2lJCCB5WqpyJZTlALC7POEyiDYknuirqFUO7aQS1geNULp1t63hyi_vc/exec';
         const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK-cbff4dbf0e46c476e2d36520ffcb3b83-X'; 
 
@@ -257,7 +278,31 @@
             initDates();
             updateAuthUI();
             loadResults();
-            if (loggedInUser) loadTodayPredictions();
+            if (loggedInUser) {
+                loadTodayPredictions();
+                setupNotifications();
+            }
+        }
+
+        async function setupNotifications() {
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    // IMPORTANT: Replace 'YOUR_VAPID_KEY_HERE' with the key from Firebase Console
+                    const token = await messaging.getToken({ vapidKey: 'BFI6s6e_ol604LUfYgTkw-3U5jkOX5AnRClSxbONvACqRR0d8HfATIvKZN65ffBI8OF9vw7xEeKinkaGHH2H9UM' }); 
+                    if (token) {
+                        console.log('FCM Token:', token);
+                        // Save token to Firestore
+                        await db.collection('users').doc(loggedInUser.email).set({
+                            email: loggedInUser.email,
+                            fcmToken: token,
+                            lastActive: new Date().toISOString()
+                        }, { merge: true });
+                    }
+                }
+            } catch (error) {
+                console.error('Notification setup failed:', error);
+            }
         }
 
         function initDates() {
@@ -336,14 +381,12 @@
                 `;
             };
 
-            // IMPROVED: Extract HH:mm safely from any string format (e.g. "14:00" or ISO)
             let kickoffTime = '00:00';
             if (g.kickoff) {
                 const timeMatch = String(g.kickoff).match(/\d{1,2}:\d{2}/);
                 kickoffTime = timeMatch ? timeMatch[0] : String(g.kickoff);
             }
 
-            // Format date
             let matchDate = '';
             if (g.date) {
                 const d = new Date(g.date);
