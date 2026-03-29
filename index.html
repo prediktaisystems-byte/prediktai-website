@@ -6,12 +6,10 @@
     <title>PREDIKT AI - AI Football Market Analysis</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://checkout.flutterwave.com/v3.js"></script>
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-3QQ5W2XE4Y"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -20,16 +18,7 @@
   gtag('config', 'G-3QQ5W2XE4Y');
 </script>
     <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-dark: #2d20a0;
-            --accent: #10b981;
-            --bg: #f8fafc;
-            --text: #1e293b;
-            --text-muted: #64748b;
-            --white: #ffffff;
-            --shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
+        :root { --primary: #4f46e5; --primary-dark: #2d20a0; --accent: #10b981; --bg: #f8fafc; --text: #1e293b; --text-muted: #64748b; --white: #ffffff; --shadow: 0 4px 20px rgba(0,0,0,0.08); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Outfit', Arial, sans-serif; color: var(--text); line-height: 1.6; background: var(--bg); overflow-x: hidden; }
         header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 3rem 1rem; text-align: center; }
@@ -94,14 +83,8 @@
     </header>
     <nav>
         <div class="container" style="display: flex; align-items: center; width: 100%;">
-            <a href="#home">Home</a>
-            <a href="#results">Results</a>
-            <a href="#markets">Markets</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#signup">Signup</a>
-            <div class="nav-auth" id="navAuth">
-                <button class="btn-login" onclick="openLogin()">Login</button>
-            </div>
+            <a href="#home">Home</a><a href="#results">Results</a><a href="#markets">Markets</a><a href="#pricing">Pricing</a><a href="#signup">Signup</a>
+            <div class="nav-auth" id="navAuth"><button class="btn-login" onclick="openLogin()">Login</button></div>
         </div>
     </nav>
     <section class="hero" id="home">
@@ -122,15 +105,10 @@
     <section id="results" class="section">
         <div class="container">
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;">
-                <div style="text-align: left;">
-                    <h2 style="text-align: left; margin-bottom: 0.5rem;">Prediction Results</h2>
-                    <p id="resultsDateLabel" style="color: #64748b; font-weight: 600;">Results for Yesterday</p>
-                </div>
+                <div style="text-align: left;"><h2 style="text-align: left; margin-bottom: 0.5rem;">Prediction Results</h2><p id="resultsDateLabel" style="color: #64748b; font-weight: 600;">Results for Yesterday</p></div>
                 <select id="dateSelect" onchange="loadResultsByDate()" style="padding: 0.8rem; border-radius: 12px; border: 2px solid #f1f5f9; font-family: 'Outfit'; font-weight: 600; color: #4f46e5;"></select>
             </div>
-            <div id="resultsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
-                <div style="grid-column: 1/-1; text-align: center; padding: 4rem;">Loading results...</div>
-            </div>
+            <div id="resultsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;"><div style="grid-column: 1/-1; text-align: center; padding: 4rem;">Loading results...</div></div>
         </div>
     </section>
     <section id="todayPredictions" class="section alt" style="display: none;">
@@ -193,9 +171,8 @@
                 <button type="submit" class="btn" style="width: 100%;">Login</button>
             </form>
         </div>
-    </div>
+                                             </div>
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
           apiKey: "AIzaSyANiFQjhKNtCWYFdibEvm_HAbtcmVwjq00",
           authDomain: "gen-lang-client-0026790187.firebaseapp.com",
@@ -206,7 +183,6 @@
           firestoreDatabaseId: "ai-studio-4668ab6b-b551-4cb4-b468-c73a1f36ae0c"
         };
 
-        // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore(app);
         const auth = firebase.auth();
@@ -220,69 +196,49 @@
         let historyDates = [];
 
         async function init() {
-            // Force register the service worker to prevent "no active service worker" error
             if ('serviceWorker' in navigator) {
                 try {
-                    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-                    console.log('Service Worker registered with scope:', registration.scope);
-                } catch (err) {
-                    console.error('Service Worker registration failed:', err);
-                }
+                    await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                    console.log('Service Worker registered');
+                } catch (err) { console.error('SW failed:', err); }
             }
-            initDates();
-            updateAuthUI();
-            loadResults();
-            if (loggedInUser) {
-                loadTodayPredictions();
-            }
+            initDates(); updateAuthUI(); loadResults();
+            if (loggedInUser) loadTodayPredictions();
         }
 
         async function setupNotifications() {
+            const notifyBtn = document.getElementById('notifyBtn');
             try {
-                const notifyBtn = document.getElementById('notifyBtn');
-                if (notifyBtn) notifyBtn.textContent = '⌛ Processing...';
-
-                console.log('Starting notification setup...');
-                
+                if (notifyBtn) notifyBtn.textContent = '⌛ Checking Support...';
                 if (!firebase.messaging.isSupported()) {
                     alert("Push Messaging is not supported in this browser.");
                     return;
                 }
 
+                if (notifyBtn) notifyBtn.textContent = '⌛ Requesting Permission...';
                 const permission = await Notification.requestPermission();
-                console.log('Notification permission status:', permission);
                 
                 if (permission === 'granted') {
+                    if (notifyBtn) notifyBtn.textContent = '⌛ Getting Token...';
+                    
+                    // Wait for service worker to be ready
+                    const registration = await navigator.serviceWorker.ready;
+                    
                     const token = await messaging.getToken({ 
-                        vapidKey: 'BBJHUzvmtqujGx_MJqDzSvPgdrAQkcfGSi_qZN9P1Ku7_3TW6nwDpNwKCCUmr1oio1D_oIp-W6gJJgmnESMDZ5U' 
+                        vapidKey: 'BBJHUzvmtqujGx_MJqDzSvPgdrAQkcfGSi_qZN9P1Ku7_3TW6nwDpNwKCCUmr1oio1D_oIp-W6gJJgmnESMDZ5U',
+                        serviceWorkerRegistration: registration
                     }); 
                     
                     if (token) {
-                        console.log('FCM Token generated successfully');
-                        
-                        // Save token to Firestore signups collection
-                        const userQuery = await db.collection('signups')
-                            .where('email', '==', loggedInUser.email)
-                            .get();
-                            
+                        if (notifyBtn) notifyBtn.textContent = '⌛ Saving to Database...';
+                        const userQuery = await db.collection('signups').where('email', '==', loggedInUser.email).get();
                         if (!userQuery.empty) {
-                            const docId = userQuery.docs[0].id;
-                            await db.collection('signups').doc(docId).update({
-                                fcmToken: token,
-                                lastActive: new Date().toISOString()
-                            });
-                            alert('✅ Notifications Enabled Successfully!');
-                            if (notifyBtn) notifyBtn.style.display = 'none';
+                            await db.collection('signups').doc(userQuery.docs[0].id).update({ fcmToken: token, lastActive: new Date().toISOString() });
                         } else {
-                            // Fallback to users collection
-                            await db.collection('users').doc(auth.currentUser ? auth.currentUser.uid : 'guest').set({
-                                email: loggedInUser.email,
-                                fcmToken: token,
-                                lastActive: new Date().toISOString()
-                            }, { merge: true });
-                            alert('✅ Notifications Enabled!');
-                            if (notifyBtn) notifyBtn.style.display = 'none';
+                            await db.collection('users').doc(auth.currentUser ? auth.currentUser.uid : 'guest').set({ email: loggedInUser.email, fcmToken: token, lastActive: new Date().toISOString() }, { merge: true });
                         }
+                        alert('✅ Notifications Enabled Successfully!');
+                        if (notifyBtn) notifyBtn.style.display = 'none';
                     } else {
                         alert('❌ No token received. Try refreshing.');
                     }
@@ -290,11 +246,10 @@
                     alert('⚠️ Permission ' + permission + '. Please click the lock icon in the URL bar and set Notifications to "Allow".');
                 }
             } catch (error) {
-                console.error('Notification setup failed:', error);
+                console.error('Notification failed:', error);
                 alert('❌ Error: ' + error.message);
             } finally {
-                const notifyBtn = document.getElementById('notifyBtn');
-                if (notifyBtn && notifyBtn.textContent === '⌛ Processing...') {
+                if (notifyBtn && notifyBtn.style.display !== 'none') {
                     notifyBtn.textContent = '🔔 Enable Notifications';
                 }
             }
@@ -303,15 +258,10 @@
         function initDates() {
             const select = document.getElementById('dateSelect');
             for (let i = 1; i <= 7; i++) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                d.setHours(0,0,0,0);
+                const d = new Date(); d.setDate(d.getDate() - i); d.setHours(0,0,0,0);
                 const label = i === 1 ? 'Yesterday' : `${i} days ago`;
-                const formatted = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-                historyDates.push({ date: d, label, formatted });
-                const opt = document.createElement('option');
-                opt.value = d.getTime();
-                opt.textContent = label;
+                historyDates.push({ date: d, label });
+                const opt = document.createElement('option'); opt.value = d.getTime(); opt.textContent = label;
                 select.appendChild(opt);
             }
         }
@@ -319,8 +269,7 @@
         async function loadResults() {
             try {
                 const res = await fetch(`${APPS_SCRIPT}?action=getResults`);
-                allResults = await res.json();
-                renderResults();
+                allResults = await res.json(); renderResults();
             } catch (e) { console.error(e); }
         }
 
@@ -328,14 +277,10 @@
             const grid = document.getElementById('resultsGrid');
             const selectedTime = parseInt(document.getElementById('dateSelect').value);
             const filtered = allResults.filter(r => {
-                const d = new Date(r.date);
-                d.setHours(0,0,0,0);
+                const d = new Date(r.date); d.setHours(0,0,0,0);
                 return d.getTime() === selectedTime;
             });
-            if (filtered.length === 0) {
-                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: #64748b;">No results for this date.</div>';
-                return;
-            }
+            if (filtered.length === 0) { grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: #64748b;">No results for this date.</div>'; return; }
             const groups = groupMatches(filtered);
             grid.innerHTML = Object.values(groups).map(g => createMatchCard(g)).join('');
         }
@@ -344,8 +289,7 @@
             const groups = {};
             data.forEach(r => {
                 if (!groups[r.match]) groups[r.match] = { match: r.match, competition: r.competition, kickoff: r.kickoff, date: r.date, hidden: [], familiar: [] };
-                if (String(r.marketType).toUpperCase().includes('HIDDEN')) groups[r.match].hidden.push(r);
-                else groups[r.match].familiar.push(r);
+                if (String(r.marketType).toUpperCase().includes('HIDDEN')) groups[r.match].hidden.push(r); else groups[r.match].familiar.push(r);
             });
             return groups;
         }
@@ -359,39 +303,12 @@
             };
             const renderMarkets = (list, title, icon) => {
                 if (list.length === 0) return '';
-                return `
-                    <div class="market-section">
-                        <h4 style="font-size: 0.8rem; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">${icon} ${title}</h4>
-                        ${list.map(r => [1,2,3].map(i => r[`market${i}`] ? `
-                            <div class="market-item">
-                                <span>${r[`market${i}`]}</span>
-                                <span class="market-conf">${r[`conf${i}`]}%</span>
-                                ${getBadge(r[`result${i}`])}
-                            </div>
-                        ` : '').join('')).join('')}
-                    </div>
-                `;
+                return `<div class="market-section"><h4 style="font-size: 0.8rem; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">${icon} ${title}</h4>${list.map(r => [1,2,3].map(i => r[`market${i}`] ? `<div class="market-item"><span>${r[`market${i}`]}</span><span class="market-conf">${r[`conf${i}`]}%</span>${getBadge(r[`result${i}`])}</div>` : '').join('')).join('')}</div>`;
             };
             let kickoffTime = '00:00';
-            if (g.kickoff) {
-                const timeMatch = String(g.kickoff).match(/\d{1,2}:\d{2}/);
-                kickoffTime = timeMatch ? timeMatch[0] : String(g.kickoff);
-            }
-            let matchDate = '';
-            if (g.date) {
-                const d = new Date(g.date);
-                matchDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' • ';
-            }
-            return `
-                <div class="result-card">
-                    <div class="match-header">
-                        <div class="match-title">${g.match}</div>
-                        <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">${g.competition} • ${matchDate}${kickoffTime}</div>
-                    </div>
-                    ${renderMarkets(g.hidden, 'Hidden Markets', '🎯')}
-                    ${renderMarkets(g.familiar, 'Familiar Markets', '📌')}
-                </div>
-            `;
+            if (g.kickoff) { const timeMatch = String(g.kickoff).match(/\d{1,2}:\d{2}/); kickoffTime = timeMatch ? timeMatch[0] : String(g.kickoff); }
+            let matchDate = ''; if (g.date) { const d = new Date(g.date); matchDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' • '; }
+            return `<div class="result-card"><div class="match-header"><div class="match-title">${g.match}</div><div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">${g.competition} • ${matchDate}${kickoffTime}</div></div>${renderMarkets(g.hidden, 'Hidden Markets', '🎯')}${renderMarkets(g.familiar, 'Familiar Markets', '📌')}</div>`;
         }
 
         async function handleLogin(e) {
@@ -401,11 +318,7 @@
             try {
                 const res = await fetch(`${APPS_SCRIPT}?action=checkMember&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`);
                 const data = await res.json();
-                if (data.valid) {
-                    loggedInUser = { email, phone };
-                    localStorage.setItem('prediktUser', JSON.stringify(loggedInUser));
-                    location.reload();
-                } else { alert('Account not found.'); }
+                if (data.valid) { loggedInUser = { email, phone }; localStorage.setItem('prediktUser', JSON.stringify(loggedInUser)); location.reload(); } else { alert('Account not found.'); }
             } catch (e) { alert('Login error.'); }
         }
 
@@ -418,40 +331,27 @@
             const url = `${APPS_SCRIPT}?action=signup&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`;
             try {
                 await fetch(url, { method: 'GET', mode: 'no-cors' });
-                msg.style.display = 'block';
-                msg.style.background = '#dcfce7';
-                msg.style.color = '#166534';
-                msg.textContent = '✅ Congratulations! Trial activated. Login above.';
-                e.target.reset();
-            } catch (e) { alert('Signup error. Please check your internet connection.'); }
+                msg.style.display = 'block'; msg.style.background = '#dcfce7'; msg.style.color = '#166534'; msg.textContent = '✅ Congratulations! Trial activated. Login above.'; e.target.reset();
+            } catch (e) { alert('Signup error.'); }
         }
 
         async function loadTodayPredictions() {
-            const section = document.getElementById('todayPredictions');
-            const grid = document.getElementById('todayGrid');
-            section.style.display = 'block';
+            const section = document.getElementById('todayPredictions'); const grid = document.getElementById('todayGrid'); section.style.display = 'block';
             try {
                 const res = await fetch(`${APPS_SCRIPT}?action=unlockPicks&email=${encodeURIComponent(loggedInUser.email)}`);
-                const data = await res.json();
-                if (data.status === 'success') {
-                    const groups = groupMatches(data.data);
-                    grid.innerHTML = Object.values(groups).map(g => createMatchCard(g)).join('');
-                }
+                const data = await res.json(); if (data.status === 'success') { const groups = groupMatches(data.data); grid.innerHTML = Object.values(groups).map(g => createMatchCard(g)).join(''); }
             } catch (e) { console.error(e); }
         }
 
         function makePayment() {
             if (!loggedInUser) { alert("Please login or signup first."); scrollToSignup(); return; }
             FlutterwaveCheckout({
-                public_key: FLUTTERWAVE_PUBLIC_KEY,
-                tx_ref: "PREDIKT_" + Date.now(),
-                amount: 1000,
-                currency: "NGN",
+                public_key: FLUTTERWAVE_PUBLIC_KEY, tx_ref: "PREDIKT_" + Date.now(), amount: 1000, currency: "NGN",
                 customer: { email: loggedInUser.email, phone_number: loggedInUser.phone, name: "Member" },
                 callback: function(data) {
                     if (data.status === "successful") {
                         fetch(`${APPS_SCRIPT}?action=paymentSuccess&email=${encodeURIComponent(loggedInUser.email)}`, { method: 'GET', mode: 'no-cors' })
-                        .then(() => { alert("Payment successful! Account upgraded."); location.reload(); });
+                        .then(() => { alert("Payment successful!"); location.reload(); });
                     }
                 },
                 customizations: { title: "PREDIKT AI Premium", description: "30 Days Access" }
@@ -461,10 +361,7 @@
         function updateAuthUI() {
             const auth = document.getElementById('navAuth');
             if (loggedInUser) {
-                auth.innerHTML = `
-                    <button id="notifyBtn" class="btn-login" style="background: #10b981; margin-right: 10px;" onclick="setupNotifications()">🔔 Enable Notifications</button>
-                    <button class="btn-logout" onclick="logout()">Logout</button>
-                `;
+                auth.innerHTML = `<button id="notifyBtn" class="btn-login" style="background: #10b981; margin-right: 10px;" onclick="setupNotifications()">🔔 Enable Notifications</button><button class="btn-logout" onclick="logout()">Logout</button>`;
             }
         }
 
