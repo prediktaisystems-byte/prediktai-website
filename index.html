@@ -249,8 +249,8 @@
                 <button type="submit" class="btn" style="width: 100%;">Login</button>
             </form>
         </div>
-                        </div>
-                        <script>
+    </div>
+    <script>
         // Firebase Configuration
         const firebaseConfig = {
           apiKey: "AIzaSyANiFQjhKNtCWYFdibEvm_HAbtcmVwjq00",
@@ -267,8 +267,8 @@
         const auth = firebase.auth();
         const messaging = firebase.messaging();
 
-        const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbyCWnuw2kFM2lJCCB5WqpyJZTlALC7POEyiDYknuirqFUO7aQS1geNULp1t63hyi_vc/exec';
-        const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK-cbff4dbf0e46c476e2d36520ffcb3b83-X'; 
+        const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbwVLhim_w7f_p9-5xBmiDMot8jrK4n3IuEynqjOgREflWr4RxTnEEkLJ6pHDufW16Nf/exec';
+        const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK-58ea416442a1b4d5aec77b64ed222957-X'; 
 
         let loggedInUser = JSON.parse(localStorage.getItem('prediktUser')) || null;
         let allResults = [];
@@ -286,14 +286,19 @@
 
         async function setupNotifications() {
             try {
+                // Sign in anonymously to satisfy Firestore security rules
+                if (!auth.currentUser) {
+                    await auth.signInAnonymously();
+                }
+
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    // IMPORTANT: Replace 'YOUR_VAPID_KEY_HERE' with the key from Firebase Console
-                    const token = await messaging.getToken({ vapidKey: 'BAxrcHCLUZ1HKq6EegxiJ2EIQfatCSvVjMkh2mK6XV6s0BblAqOsYzMih9IE-DXvNEd2kLp0SJYS_Cpm85aT7E8' }); 
+                    // IMPORTANT: Replace 'YOUR_VAPID_KEY_HERE' with your key from Firebase Console
+                    const token = await messaging.getToken({ vapidKey: 'BALb2079HDHK3BAOfpFdxy_n3c0G4xtm9OTn9hHVYvamychrti5yaPucZWByv8BGCVR5szHaAvjz0qKHS69DEOQ' }); 
                     if (token) {
                         console.log('FCM Token:', token);
-                        // Save token to Firestore
-                        await db.collection('users').doc(loggedInUser.email).set({
+                        // Save token to Firestore using the Auth UID
+                        await db.collection('users').doc(auth.currentUser.uid).set({
                             email: loggedInUser.email,
                             fcmToken: token,
                             lastActive: new Date().toISOString()
@@ -381,12 +386,14 @@
                 `;
             };
 
+            // IMPROVED: Extract HH:mm safely from any string format (e.g. "14:00" or ISO)
             let kickoffTime = '00:00';
             if (g.kickoff) {
                 const timeMatch = String(g.kickoff).match(/\d{1,2}:\d{2}/);
                 kickoffTime = timeMatch ? timeMatch[0] : String(g.kickoff);
             }
 
+            // Format date
             let matchDate = '';
             if (g.date) {
                 const d = new Date(g.date);
