@@ -219,7 +219,16 @@
         let allResults = [];
         let historyDates = [];
 
-        function init() {
+        async function init() {
+            // Force register the service worker to prevent "no active service worker" error
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                    console.log('Service Worker registered with scope:', registration.scope);
+                } catch (err) {
+                    console.error('Service Worker registration failed:', err);
+                }
+            }
             initDates();
             updateAuthUI();
             loadResults();
@@ -240,7 +249,6 @@
                     return;
                 }
 
-                // I REMOVED THE ANONYMOUS LOGIN LINE FROM HERE TO FIX THE ERROR
                 const permission = await Notification.requestPermission();
                 console.log('Notification permission status:', permission);
                 
