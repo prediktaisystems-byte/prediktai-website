@@ -254,18 +254,38 @@
     <section id="pricing" class="section alt">
         <div class="container">
             <h2>Simple Pricing</h2>
-            <p id="pricingNote" style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:-1.5rem; margin-bottom:2rem; font-weight:600;">Pricing shown in your local currency</p>
+            <p id="pricingNote" style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:-1.5rem; margin-bottom:2.5rem; font-weight:600;">Pricing shown in your local currency</p>
             <div class="pricing">
+
+                <!-- FREE TRIAL CARD -->
                 <div class="price-card featured">
                     <h3>🎯 Free Trial</h3>
-                    <div class="price">7 Days</div>
-                    <button onclick="scrollToSignup()" class="btn">Start Trial Now</button>
+                    <div class="price" style="font-size:2rem; margin:1rem 0;">7 Days</div>
+                    <p style="font-style:italic; color:#4f46e5; font-weight:700; margin-bottom:0.8rem;">Try before you commit.</p>
+                    <div style="text-align:left; margin-bottom:1.5rem; display:grid; gap:0.6rem;">
+                        <p style="font-size:0.9rem; color:#475569; display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#10b981; font-weight:800; flex-shrink:0;">✓</span> 7 full days of access.</p>
+                        <p style="font-size:0.9rem; color:#475569; display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#10b981; font-weight:800; flex-shrink:0;">✓</span> Every feature unlocked.</p>
+                        <p style="font-size:0.9rem; color:#475569; display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#10b981; font-weight:800; flex-shrink:0;">✓</span> No strings attached.</p>
+                    </div>
+                    <button onclick="scrollToSignup()" class="btn" style="width:100%;">Start Free Trial</button>
+                    <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.8rem; text-align:center;">No payment required.</p>
                 </div>
+
+                <!-- PREMIUM CARD -->
                 <div class="price-card">
                     <h3>💎 Premium</h3>
-                    <div id="priceDisplay" class="price">₦5,000<span style="font-size:1rem; opacity:0.6;">/mo</span></div>
-                    <button onclick="makePayment()" class="btn btn-green">Upgrade Now</button>
+                    <div id="priceDisplay" class="price" style="margin:1rem 0;">&#8358;3,500<span style="font-size:1rem; opacity:0.6;">/mo</span></div>
+                    <p style="font-style:italic; color:#4f46e5; font-weight:700; margin-bottom:0.8rem;">Professional analysis. Daily delivery.</p>
+                    <div style="text-align:left; margin-bottom:1.5rem; display:grid; gap:0.6rem;">
+                        <p style="font-size:0.9rem; color:#475569; display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#4f46e5; font-weight:800; flex-shrink:0;">✓</span> AI-powered predictions across global leagues.</p>
+                        <p style="font-size:0.9rem; color:#475569; display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#4f46e5; font-weight:800; flex-shrink:0;">✓</span> Hidden and Familiar market picks.</p>
+                        <p style="font-size:0.9rem; color:#475569; display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#4f46e5; font-weight:800; flex-shrink:0;">✓</span> Confidence percentages &amp; full reasoning.</p>
+                        <p style="font-size:0.9rem; color:#475569; display:flex; align-items:flex-start; gap:0.5rem;"><span style="color:#4f46e5; font-weight:800; flex-shrink:0;">✓</span> 30-day rolling access.</p>
+                    </div>
+                    <button onclick="makePayment()" class="btn btn-green" style="width:100%;">Upgrade Now</button>
+                    <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.8rem; text-align:center;">Secure payment. Cancel anytime.</p>
                 </div>
+
             </div>
         </div>
     </section>
@@ -287,6 +307,7 @@
                         <button type="submit" id="signupBtn" class="btn" style="width:100%;">Activate Trial</button>
                     </form>
                 </div>
+
                 <!-- STEP 2: OTP (hidden until code is sent) -->
                 <div id="signupStep2" style="display:none;">
                     <div style="text-align:center; margin-bottom:1.5rem;">
@@ -315,7 +336,6 @@
             </div>
         </div>
     </section>
-
     <footer>
         <div class="container">
             <div style="max-width: 400px; margin: 0 auto 3rem; text-align: left; background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 24px;">
@@ -354,7 +374,7 @@
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 
-        const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbzZX_Usng5-6B0eUc2RZJLXcS3rXFozegROkpAC4mrCGri1LXiOePSwNWhY5ZA-cwvAtw/exec';
+        const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxtOlU85ZCB8NXHi7VUOri0XnOzarIHPO9cm5srBzKD5xhZBfuoncubqbWr4eMSK6_icA/exec';
         const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK-ea43f13a75ac4e8a27a5bf196d6a028c-X'; 
 
         let loggedInUser = JSON.parse(localStorage.getItem('prediktUser')) || null;
@@ -450,7 +470,6 @@
                     </div>
                 `;
             };
-
             let kickoffTime = '00:00';
             if (g.kickoff) {
                 const timeMatch = String(g.kickoff).match(/\d{1,2}:\d{2}/);
@@ -474,6 +493,7 @@
                 </div>
             `;
         }
+
         async function handleLogin(e) {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
@@ -490,7 +510,7 @@
         }
 
         // ── Region & payment config (set by detectRegion) ────────────────
-        let _payRegion = { gateway:'flutterwave', amount:3500, currency:'NGN', label:'NGN' };
+        let _payRegion = { gateway:'flutterwave', amount:5000, currency:'NGN', label:'NGN' };
         let _otpPending = {};
 
         // ── IP Detection (runs silently on load) ──────────────────
@@ -500,18 +520,16 @@
                 const data = await res.json();
                 const cc   = data.country_code || 'NG';
                 const map  = {
-                    NG: { gateway:'flutterwave', amount:3500,  currency:'NGN', display:'&#8358;3,500'  },
-                    GH: { gateway:'flutterwave', amount:30,     currency:'GHS', display:'GH&#8373;30'            },
-                    KE: { gateway:'flutterwave', amount:450,     currency:'KES', display:'KES 450'            },
-                    ZA: { gateway:'flutterwave', amount:45,     currency:'ZAR', display:'R45'            },
-                    UG: { gateway:'flutterwave', amount:9000,     currency:'UGX', display:'R45'            },
-                    TZ: { gateway:'flutterwave', amount:6000,  currency:'TZS', display:'TZS 6,000'     },
-                    GB: { gateway:'paystack',    amount:10,     currency:'GBP', display:'&pound;10'            },
-                    DE: { gateway:'paystack',    amount:10,  currency:'EUR', display:'&euro;10'      },
-                    FR: { gateway:'paystack',    amount:10,  currency:'EUR', display:'&euro;10'      },
-                    NL: { gateway:'paystack',    amount:10,  currency:'EUR', display:'&euro;10'      },
-                    US: { gateway:'paystack',    amount:15,  currency:'USD', display:'$15'           },
-                    CA: { gateway:'paystack',    amount:20,  currency:'USD', display:'$20'           },
+                    NG: { gateway:'flutterwave', amount:5000,  currency:'NGN', display:'&#8358;5,000'  },
+                    GH: { gateway:'flutterwave', amount:8,     currency:'USD', display:'$8'            },
+                    KE: { gateway:'flutterwave', amount:8,     currency:'USD', display:'$8'            },
+                    ZA: { gateway:'flutterwave', amount:8,     currency:'USD', display:'$8'            },
+                    GB: { gateway:'paystack',    amount:2000,  currency:'GBP', display:'&pound;20'     },
+                    DE: { gateway:'paystack',    amount:2000,  currency:'EUR', display:'&euro;20'      },
+                    FR: { gateway:'paystack',    amount:2000,  currency:'EUR', display:'&euro;20'      },
+                    NL: { gateway:'paystack',    amount:2000,  currency:'EUR', display:'&euro;20'      },
+                    US: { gateway:'paystack',    amount:2500,  currency:'USD', display:'$25'           },
+                    CA: { gateway:'paystack',    amount:2500,  currency:'USD', display:'$25'           },
                 };
                 _payRegion = map[cc] || { gateway:'paystack', amount:1500, currency:'USD', display:'$15' };
                 const el = document.getElementById('priceDisplay');
