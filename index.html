@@ -164,7 +164,6 @@
             </div>
         </div>
     </section>
-
     <section id="todayPredictions" class="section alt" style="display: none;">
         <div class="container">
             <div style="background: #4f46e5; color: white; display: inline-block; padding: 0.4rem 1rem; border-radius: 12px; font-weight: 800; font-size: 0.8rem; margin-bottom: 1rem;">🎯 MEMBER ONLY</div>
@@ -219,8 +218,9 @@
                 </div>
             </div>
         </div>
-            </section>
-            <section id="faq" class="section">
+    </section>
+
+    <section id="faq" class="section">
         <div class="container">
             <h2 style="text-align: center; margin-bottom: 3rem;">Frequently Asked Questions</h2>
             <div style="max-width: 800px; margin: 0 auto; display: grid; gap: 1.5rem;">
@@ -263,7 +263,7 @@
                 </div>
                 <div class="price-card">
                     <h3>💎 Premium</h3>
-                    <div id="priceDisplay" class="price">₦3,500<span style="font-size:1rem; opacity:0.6;">/mo</span></div>
+                    <div id="priceDisplay" class="price">₦5,000<span style="font-size:1rem; opacity:0.6;">/mo</span></div>
                     <button onclick="makePayment()" class="btn btn-green">Upgrade Now</button>
                 </div>
             </div>
@@ -287,7 +287,6 @@
                         <button type="submit" id="signupBtn" class="btn" style="width:100%;">Activate Trial</button>
                     </form>
                 </div>
-
                 <!-- STEP 2: OTP (hidden until code is sent) -->
                 <div id="signupStep2" style="display:none;">
                     <div style="text-align:center; margin-bottom:1.5rem;">
@@ -355,7 +354,7 @@
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 
-        const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbz8uT5bu1dONCuFJB0Pdi9nXJYOmBLtCHbxo4Su98qbhf9IRz1OEqF5V-IhRQC9Jk-Bbw/exec';
+        const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxBF-9Lz1yNk-zu6NMZLK1iBeE1XI-eT5jJr1EN79rRsPm6luDsRCr1e-GWs9w8ov_hjg/exec';
         const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK-ea43f13a75ac4e8a27a5bf196d6a028c-X'; 
 
         let loggedInUser = JSON.parse(localStorage.getItem('prediktUser')) || null;
@@ -505,16 +504,16 @@
                     GH: { gateway:'flutterwave', amount:30,     currency:'GHS', display:'GH&#8373;30'            },
                     KE: { gateway:'flutterwave', amount:450,     currency:'KES', display:'KES 450'            },
                     ZA: { gateway:'flutterwave', amount:45,     currency:'ZAR', display:'R45'            },
-                    UG: { gateway:'flutterwave', amount:9000,     currency:'UGX', display:'UGX 9,000'            },
-                    TZ: { gateway:'flutterwave', amount:6000,     currency:'TZS', display:'TZS 6,000'            },
-                    GB: { gateway:'paystack',    amount:10,  currency:'GBP', display:'&pound;10'     },
+                    UG: { gateway:'flutterwave', amount:9000,     currency:'UGX', display:'R45'            },
+                    TZ: { gateway:'flutterwave', amount:6000,  currency:'TZS', display:'TZS 6,000'     },
+                    GB: { gateway:'paystack',    amount:10,     currency:'GBP', display:'&pound;10'            },
                     DE: { gateway:'paystack',    amount:10,  currency:'EUR', display:'&euro;10'      },
                     FR: { gateway:'paystack',    amount:10,  currency:'EUR', display:'&euro;10'      },
                     NL: { gateway:'paystack',    amount:10,  currency:'EUR', display:'&euro;10'      },
                     US: { gateway:'paystack',    amount:15,  currency:'USD', display:'$15'           },
                     CA: { gateway:'paystack',    amount:20,  currency:'USD', display:'$20'           },
                 };
-                _payRegion = map[cc] || { gateway:'paystack', amount:15, currency:'USD', display:'$15' };
+                _payRegion = map[cc] || { gateway:'paystack', amount:1500, currency:'USD', display:'$15' };
                 const el = document.getElementById('priceDisplay');
                 if (el) el.innerHTML = _payRegion.display + '<span style="font-size:1rem; opacity:0.6;">/mo</span>';
             } catch(e) { /* default Nigeria stays */ }
@@ -675,20 +674,23 @@
         function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
         
         function openAnalysis(matchName, marketType, marketIndex) {
-            const modal = document.getElementById('analysisModal');
+            const modal   = document.getElementById('analysisModal');
             const content = document.getElementById('analysisContent');
-            
+
             const row = allResults.find(r => r.match === matchName && r.marketType === marketType);
             if (!row) return;
 
             const market = row[`market${marketIndex}`];
-            const conf = row[`conf${marketIndex}`];
-            
-            const analysis = row[`analysis${marketIndex}`] || "Our AI analyzed the team's attacking volume and shooting accuracy over the last 10 fixtures. The data indicates a high probability of this pattern repeating in today's tactical setup.";
-            const h2h = row[`h2h${marketIndex}`] || "Historical head-to-head data shows that in 80% of previous encounters, this specific market behavior was observed, especially when playing under similar weather and pitch conditions.";
-            const stats = row[`stats${marketIndex}`] || "Both teams show consistent performance in mid-range shot conversion and defensive positioning, supporting the statistical likelihood of this outcome.";
-            const injuries = row[`injuries${marketIndex}`] || "Current squad reports indicate no significant injuries to key playmakers or defensive anchors that would disrupt the predicted flow of the match.";
-            const tactical = row[`tactical${marketIndex}`] || "The tactical matchup suggests a high-tempo game with both teams focusing on wing-play, which directly influences the probability of this selected market.";
+            const conf   = row[`conf${marketIndex}`];
+
+            // ── Use your actual why descriptions from Sheets ──────
+            // Falls back to generic text only if the column is empty
+            const whyText = row[`why${marketIndex}`] || '';
+            const hasWhy  = whyText && whyText.toString().trim().length > 0;
+
+            const analysis = hasWhy
+              ? whyText
+              : "AI analysis based on historical patterns, team form, and statistical modeling for this market.";
 
             content.innerHTML = `
                 <div style="margin-bottom: 2rem;">
@@ -706,22 +708,9 @@
                 </div>
 
                 <div style="display: grid; gap: 1.5rem;">
-                    <div style="background: white; border-radius: 16px;">
-                        <h4 style="display: flex; align-items: center; gap: 0.5rem; color: #0f172a; margin-bottom: 0.7rem; font-size: 1.1rem;">🔍 Detailed Analysis</h4>
-                        <p style="font-size: 1rem; line-height: 1.6; color: #475569;">${analysis}</p>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-                        <div style="background: #f1f5f9; padding: 1.2rem; border-radius: 16px;">
-                            <h4 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 0.9rem; text-transform: uppercase;">📊 H2H & Stats</h4>
-                            <p style="font-size: 0.85rem; color: #475569; margin-bottom: 0.5rem;">${h2h}</p>
-                            <p style="font-size: 0.85rem; color: #475569;">${stats}</p>
-                        </div>
-                        <div style="background: #f1f5f9; padding: 1.2rem; border-radius: 16px;">
-                            <h4 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 0.9rem; text-transform: uppercase;">📋 Tactics & Injuries</h4>
-                            <p style="font-size: 0.85rem; color: #475569; margin-bottom: 0.5rem;">${tactical}</p>
-                            <p style="font-size: 0.85rem; color: #475569;">${injuries}</p>
-                        </div>
+                    <div style="background: white; border-radius: 16px; padding: 1.2rem;">
+                        <h4 style="display: flex; align-items: center; gap: 0.5rem; color: #0f172a; margin-bottom: 0.7rem; font-size: 1.1rem;">&#128269; Why This Market</h4>
+                        <p style="font-size: 1rem; line-height: 1.7; color: #475569;">${analysis}</p>
                     </div>
                 </div>
 
