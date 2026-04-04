@@ -254,11 +254,12 @@
     <section id="pricing" class="section alt">
         <div class="container">
             <h2>Simple Pricing</h2>
+            <p style="text-align:center; color:#64748b; font-size:0.85rem; margin-top:-1.5rem; margin-bottom:2.5rem; font-weight:600;">Pricing shown in your local currency</p>
             <div class="pricing">
 
                 <div class="price-card featured">
                     <h3>🎯 Free Trial</h3>
-                    <div style="margin:1.5rem 0; text-align:left; display:grid; gap:0.5rem;">
+                    <div style="margin:1.5rem 0;">
                         <p style="font-size:0.95rem; color:#475569;">7 days. Full access. No payment required.</p>
                     </div>
                     <button onclick="scrollToSignup()" class="btn" style="width:100%;">Start Free Trial</button>
@@ -266,10 +267,14 @@
 
                 <div class="price-card">
                     <h3>💎 Premium</h3>
-                    <div style="margin:1.5rem 0; text-align:left; display:grid; gap:0.5rem;">
+                    <div id="priceDisplay" style="font-size:2.2rem; font-weight:800; color:var(--primary); margin:1rem 0;">
+                        &#8358;3,500<span style="font-size:1rem; opacity:0.6; font-weight:400;">/mo</span>
+                    </div>
+                    <div style="margin-bottom:1.5rem;">
                         <p style="font-size:0.95rem; color:#475569;">AI predictions. Daily. 7+ leagues. Hidden Markets. Familiar Markets. Top 3 picks per match. Full analysis. 30 days.</p>
                     </div>
                     <button onclick="makePayment()" class="btn btn-green" style="width:100%;">Upgrade Now</button>
+                    <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.8rem; text-align:center;">Secure payment. Cancel anytime.</p>
                 </div>
 
             </div>
@@ -361,7 +366,7 @@
 
 
         const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxtOlU85ZCB8NXHi7VUOri0XnOzarIHPO9cm5srBzKD5xhZBfuoncubqbWr4eMSK6_icA/exec';
-        const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK-ab1439e03a18daa077224281219e4220-X'; 
+        const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK-76f9f0afb8759e52126d732ae562d6b5-X'; 
 
         let loggedInUser = JSON.parse(localStorage.getItem('prediktUser')) || null;
         let allResults = [];
@@ -496,7 +501,7 @@
         }
 
         // ── Region & payment config ──────────────────────────────────
-        let _payRegion = { amount:3500, currency:'NGN' };
+        let _payRegion = { amount:3500, currency:'NGN', display:'&#8358;3,500' };
         let _otpPending = {};
 
         // ── IP Detection (runs silently on load) ──────────────
@@ -505,36 +510,55 @@
                 const res  = await fetch('https://ipapi.co/json/');
                 const data = await res.json();
                 const cc   = data.country_code || 'NG';
-                const map  = {
-                    // ── Africa ──────────────────────────────────
-                    NG: { amount:3500,  currency:'NGN' },
-                    GH: { amount:160,   currency:'GHS' },
-                    KE: { amount:1400,  currency:'KES' },
-                    ZA: { amount:210,   currency:'ZAR' },
-                    UG: { amount:43000, currency:'UGX' },
-                    TZ: { amount:27500, currency:'TZS' },
-                    ZM: { amount:220,   currency:'ZMW' },
-                    RW: { amount:15500, currency:'RWF' },
-                    // ── Europe ──────────────────────────────────
-                    GB: { amount:10,    currency:'GBP' },
-                    DE: { amount:10,    currency:'EUR' },
-                    FR: { amount:10,    currency:'EUR' },
-                    ES: { amount:10,    currency:'EUR' },
-                    IT: { amount:10,    currency:'EUR' },
-                    NL: { amount:10,    currency:'EUR' },
-                    BE: { amount:10,    currency:'EUR' },
-                    SE: { amount:100,   currency:'SEK' },
-                    NO: { amount:100,   currency:'NOK' },
-                    // ── Americas ────────────────────────────────
-                    US: { amount:15,    currency:'USD' },
-                    CA: { amount:20,    currency:'CAD' },
-                    // ── Default ─────────────────────────────────
+                const continent = data.continent_code || '';
+
+                const map = {
+                    // ── Africa ───────────────────────────────────────────
+                    NG: { amount:3500,  currency:'NGN', display:'&#8358;3,500'  },
+                    GH: { amount:160,   currency:'GHS', display:'GH&#8373;160'  },
+                    KE: { amount:1400,  currency:'KES', display:'KES 1,400'     },
+                    ZA: { amount:210,   currency:'ZAR', display:'R210'          },
+                    UG: { amount:43000, currency:'UGX', display:'UGX 43,000'    },
+                    TZ: { amount:27500, currency:'TZS', display:'TZS 27,500'    },
+                    ZM: { amount:220,   currency:'ZMW', display:'ZMW 220'       },
+                    RW: { amount:15500, currency:'RWF', display:'RWF 15,500'    },
+                    // ── Europe ───────────────────────────────────────────
+                    GB: { amount:10,    currency:'GBP', display:'&pound;10'     },
+                    DE: { amount:10,    currency:'EUR', display:'&euro;10'      },
+                    FR: { amount:10,    currency:'EUR', display:'&euro;10'      },
+                    ES: { amount:10,    currency:'EUR', display:'&euro;10'      },
+                    IT: { amount:10,    currency:'EUR', display:'&euro;10'      },
+                    NL: { amount:10,    currency:'EUR', display:'&euro;10'      },
+                    BE: { amount:10,    currency:'EUR', display:'&euro;10'      },
+                    SE: { amount:100,   currency:'SEK', display:'SEK 100'       },
+                    NO: { amount:100,   currency:'NOK', display:'NOK 100'       },
+                    // ── Americas ─────────────────────────────────────────
+                    US: { amount:15,    currency:'USD', display:'$15'           },
+                    CA: { amount:20,    currency:'CAD', display:'CA$20'         },
                 };
-                _payRegion = map[cc] || { amount:10, currency:'USD' };
+
+                if (map[cc]) {
+                    _payRegion = map[cc];
+                } else if (continent === 'EU') {
+                    // Unlisted European country — default £8
+                    _payRegion = { amount:8, currency:'GBP', display:'&pound;8' };
+                } else if (continent === 'AF') {
+                    // Unlisted African country — default ₦3,500 NGN
+                    _payRegion = { amount:3500, currency:'NGN', display:'&#8358;3,500' };
+                } else {
+                    // Rest of world
+                    _payRegion = { amount:10, currency:'USD', display:'$10' };
+                }
+
+                // Update price card display
+                const el = document.getElementById('priceDisplay');
+                if (el) el.innerHTML = _payRegion.display + '<span style="font-size:1rem; opacity:0.6; font-weight:400;">/mo</span>';
+
             } catch(e) { /* default Nigeria stays */ }
         }
 
         // ── STEP 1: Send OTP ──────────────────────────────────
+// ── STEP 1: Send OTP ──────────────────────────────────
 // ── STEP 1: Send OTP ──────────────────────────────────────
         async function handleSignup(e) {
             e.preventDefault();
