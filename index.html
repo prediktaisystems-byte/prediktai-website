@@ -271,25 +271,28 @@
                     <button onclick="scrollToSignup()" class="btn" style="width:100%;">Start Free Trial</button>
                 </div>
 
-                <div class="price-card">
+            <div class="price-card">
                     <h3>💎 Premium</h3>
                     <div id="priceDisplay" style="font-size:2.2rem; font-weight:800; color:var(--primary); margin:1rem 0;">
                         &#8358;3,500<span style="font-size:1rem; opacity:0.6; font-weight:400;">/mo</span>
                     </div>
                     <div style="margin-bottom:1.5rem;">
                         <p style="font-size:0.95rem; color:#475569;">AI predictions. Daily. 7+ leagues. Hidden Markets. Familiar Markets. Top 3 picks per match. Full analysis. 30 days.</p>
-                     </div>
-<button onclick="makePayment()" class="btn btn-green" style="width:100%;">Upgrade Now</button>
+                    </div>
+                    <button onclick="makePayment()" class="btn btn-green" style="width:100%;">Upgrade Now</button>
+                    <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.8rem; text-align:center;">Secure payment. Cancel anytime.</p>
+                </div>
 
-<p style="font-size:0.8rem; color:#94a3b8; margin-top:0.8rem; text-align:center;">Secure payment. Cancel anytime.</p>
-                 </div>
+            </div>
+        </div>
+    </section>
 
-             </div>
-         </div>
-      </section>
+    <section id="signup" class="section">
+        <div class="container">
+            <h2>Start Your Free 7-Day Trial</h2>
+            <div class="login-section">
 
-      <section id="signup" class="section"> <div class="container"> <h2>Start Your Free 7-Day Trial</h2> <div class="login-section">
-          <!-- Shared message box -->
+                <!-- Shared message box -->
                 <div id="signupMsg" style="display:none; padding:1rem; border-radius:12px; margin-bottom:1.5rem; font-weight:700; text-align:center;"></div>
 
                 <!-- STEP 1: Details -->
@@ -379,7 +382,7 @@
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 
-        const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxCMU5HokVY5SCb-8rFqxKUy1XHrLuwbJbqlW2z_OwbFr2-JNXQ3g3M4er2ld0ScGUBgw/exec';
+        const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbzsgPfzj19zjF1Lx7vSODSEbwK0BXt7zJZPSu5Ik3vgGvN4UclJp8o9x279amEvnyAceg/exec';
         const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK-ea43f13a75ac4e8a27a5bf196d6a028c-X'; 
 
         let loggedInUser = JSON.parse(localStorage.getItem('prediktUser')) || null;
@@ -395,7 +398,6 @@
                 loadTodayPredictions();
             }
         }
-
         async function loadWinRates() {
             try {
                 const res  = await fetch(APPS_SCRIPT + '?action=getWinRates');
@@ -524,7 +526,188 @@
             if (!isNaN(d.getTime())) {
                 matchDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' • ';
             }
-            // ── Message helper ────────────────────────────────────────
+
+            // Build logo display if available
+            const homeLogo = g.hidden[0]?.homeLogo || g.familiar[0]?.homeLogo || '';
+            const awayLogo = g.hidden[0]?.awayLogo || g.familiar[0]?.awayLogo || '';
+            const logoHtml = (homeLogo || awayLogo) ? `
+                <div class="team-logos">
+                    ${homeLogo ? `<img src="${homeLogo}" class="team-logo" onerror="this.style.display='none'" alt="">` : ''}
+                    <span class="logo-vs">VS</span>
+                    ${awayLogo ? `<img src="${awayLogo}" class="team-logo" onerror="this.style.display='none'" alt="">` : ''}
+                </div>` : '';
+
+            return `
+                <div class="result-card">
+                    <div class="match-header">
+                        ${logoHtml}
+                        <div class="match-title">${g.match}</div>
+                        <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">${g.competition} • ${matchDate}${kickoffTime}</div>
+                    </div>
+                    ${renderMarkets(g.hidden, 'Hidden Markets', '🎯')}
+                    ${renderMarkets(g.familiar, 'Familiar Markets', '📌')}
+                </div>
+            `;
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const phone = document.getElementById('loginPhone').value;
+            try {
+                const res = await fetch(`${APPS_SCRIPT}?action=checkMember&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`);
+                const data = await res.json();
+                if (data.valid) {
+                    loggedInUser = { email, phone };
+                    localStorage.setItem('prediktUser', JSON.stringify(loggedInUser));
+                    location.reload();
+                } else { alert('Account not found.'); }
+            } catch (e) { alert('Login error.'); }
+        }
+
+        // ── Region & payment config ──────────────────────────────────
+        let _payRegion = { amount:3500, currency:'NGN', display:'&#8358;3,500' };
+        let _otpPending = {};
+
+        // ── IP Detection (runs silently on load) ──────────────
+        async function detectRegion() {
+            try {
+                const res  = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                const cc   = data.country_code || 'NG';
+                const continent = data.continent_code || '';
+
+                const map = {
+                    // ── Africa ───────────────────────────────────────────
+                    NG: { amount:3500,  currency:'NGN', display:'&#8358;3,500'  },
+                    GH: { amount:160,   currency:'GHS', display:'GH&#8373;160'  },
+                    KE: { amount:1400,  currency:'KES', display:'KES 1,400'     },
+                    ZA: { amount:210,   currency:'ZAR', display:'R210'          },
+                    UG: { amount:43000, currency:'UGX', display:'UGX 43,000'    },
+                    TZ: { amount:27500, currency:'TZS', display:'TZS 27,500'    },
+                    ZM: { amount:220,   currency:'ZMW', display:'ZMW 220'       },
+                    RW: { amount:15500, currency:'RWF', display:'RWF 15,500'    },
+                    // ── Europe ───────────────────────────────────────────
+                    GB: { amount:10,    currency:'GBP', display:'&pound;10'     },
+                    DE: { amount:10,    currency:'EUR', display:'&euro;10'      },
+                    FR: { amount:10,    currency:'EUR', display:'&euro;10'      },
+                    ES: { amount:10,    currency:'EUR', display:'&euro;10'      },
+                    IT: { amount:10,    currency:'EUR', display:'&euro;10'      },
+                    NL: { amount:10,    currency:'EUR', display:'&euro;10'      },
+                    BE: { amount:10,    currency:'EUR', display:'&euro;10'      },
+                    SE: { amount:100,   currency:'SEK', display:'SEK 100'       },
+                    NO: { amount:100,   currency:'NOK', display:'NOK 100'       },
+                    // ── Americas ─────────────────────────────────────────
+                    US: { amount:15,    currency:'USD', display:'$15'           },
+                    CA: { amount:20,    currency:'CAD', display:'CA$20'         },
+                };
+
+                if (map[cc]) {
+                    _payRegion = map[cc];
+                } else if (continent === 'EU') {
+                    // Unlisted European country — default £8
+                    _payRegion = { amount:8, currency:'GBP', display:'&pound;8' };
+                } else if (continent === 'AF') {
+                    // Unlisted African country — default ₦3,500 NGN
+                    _payRegion = { amount:3500, currency:'NGN', display:'&#8358;3,500' };
+                } else {
+                    // Rest of world
+                    _payRegion = { amount:10, currency:'USD', display:'$10' };
+                }
+
+                // Update price card display
+                const el = document.getElementById('priceDisplay');
+                if (el) el.innerHTML = _payRegion.display + '<span style="font-size:1rem; opacity:0.6; font-weight:400;">/mo</span>';
+
+            } catch(e) { /* default Nigeria stays */ }
+        }
+
+        // ── STEP 1: Send OTP ──────────────────────────────────
+        async function handleSignup(e) {
+            e.preventDefault();
+            const name  = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const btn   = document.getElementById('signupBtn');
+            btn.disabled = true;
+            btn.textContent = 'Sending code...';
+            showSignupMsg('', 'neutral');
+            try {
+                const url  = APPS_SCRIPT + '?action=sendOTP&name=' + encodeURIComponent(name) + '&email=' + encodeURIComponent(email) + '&phone=' + encodeURIComponent(phone);
+                const res  = await fetch(url);
+                const data = await res.json();
+                if (data.success) {
+                    _otpPending = { name, email, phone };
+                    document.getElementById('signupStep1').style.display = 'none';
+                    document.getElementById('signupStep2').style.display = 'block';
+                    document.getElementById('otpEmailDisplay').textContent = email;
+                    document.getElementById('otpInput').value = '';
+                    document.getElementById('otpInput').focus();
+                    showSignupMsg('Code sent! Check your inbox and spam folder.', 'success');
+                } else if (data.message === 'already_registered') {
+                    showSignupMsg('This email is already registered. Please login above.', 'info');
+                    btn.disabled = false; btn.textContent = 'Activate Trial';
+                } else {
+                    showSignupMsg('Could not send code: ' + (data.message || 'Try again.'), 'error');
+                    btn.disabled = false; btn.textContent = 'Activate Trial';
+                }
+            } catch(err) {
+                showSignupMsg('Network error. Check your connection and try again.', 'error');
+                btn.disabled = false; btn.textContent = 'Activate Trial';
+            }
+            return false;
+        }
+
+        // ── STEP 2: Verify OTP ────────────────────────────────────
+        async function handleOTPVerify(e) {
+            e.preventDefault();
+            const otp = document.getElementById('otpInput').value.trim();
+            const btn = document.getElementById('verifyBtn');
+            if (otp.length !== 6) { showSignupMsg('Please enter the full 6-digit code.', 'error'); return false; }
+            btn.disabled = true; btn.textContent = 'Verifying...';
+            try {
+                const url  = APPS_SCRIPT + '?action=verifyOTP&email=' + encodeURIComponent(_otpPending.email) + '&otp=' + encodeURIComponent(otp);
+                const res  = await fetch(url);
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('signupStep2').style.display = 'none';
+                    showSignupMsg('Identity verified! Your 7-Day Trial is ACTIVE. Login above to access predictions.', 'success');
+                } else {
+                    showSignupMsg((data.message || 'Verification failed. Try again.'), 'error');
+                    btn.disabled = false; btn.textContent = 'Verify & Activate Trial';
+                }
+            } catch(err) {
+                showSignupMsg('Network error. Try again.', 'error');
+                btn.disabled = false; btn.textContent = 'Verify & Activate Trial';
+            }
+            return false;
+        }
+
+        // ── Resend OTP ────────────────────────────────────────────
+        async function resendOTP() {
+            const btn = document.getElementById('resendBtn');
+            btn.disabled = true; btn.textContent = 'Sending...';
+            try {
+                const url  = APPS_SCRIPT + '?action=sendOTP&name=' + encodeURIComponent(_otpPending.name) + '&email=' + encodeURIComponent(_otpPending.email) + '&phone=' + encodeURIComponent(_otpPending.phone);
+                const res  = await fetch(url);
+                const data = await res.json();
+                showSignupMsg(data.success ? 'New code sent! Check your inbox.' : 'Could not resend. Try again.', data.success ? 'success' : 'error');
+            } catch(e) { showSignupMsg('Network error. Try again.', 'error'); }
+            setTimeout(() => { btn.disabled = false; btn.textContent = 'Resend Code'; }, 30000);
+        }
+
+        // ── Go back to Step 1 ─────────────────────────────────────
+        function resetSignupForm() {
+            _otpPending = {};
+            document.getElementById('signupStep2').style.display = 'none';
+            document.getElementById('signupStep1').style.display = 'block';
+            document.getElementById('signupBtn').disabled = false;
+            document.getElementById('signupBtn').textContent = 'Activate Trial';
+            document.getElementById('signupForm').reset();
+            showSignupMsg('', 'neutral');
+        }
+
+        // ── Message helper ────────────────────────────────────────
         function showSignupMsg(text, type) {
             const el = document.getElementById('signupMsg');
             if (!text) { el.style.display = 'none'; return; }
@@ -574,202 +757,4 @@
                 }
             });
         }
-
         
-        function updateAuthUI() {
-            const auth = document.getElementById('navAuth');
-            if (loggedInUser) {
-                auth.innerHTML = `
-                    <button class="btn-logout" onclick="logout()">Logout</button>
-                `;
-            }
-        }
-
-        function logout() { localStorage.removeItem('prediktUser'); location.reload(); }
-        function openLogin() { document.getElementById('loginModal').style.display = 'block'; }
-        function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
-        
-        function openAnalysis(matchName, marketType, marketIndex) {
-            const modal   = document.getElementById('analysisModal');
-            const content = document.getElementById('analysisContent');
-
-            const row = allResults.find(r => r.match === matchName && r.marketType === marketType);
-            if (!row) return;
-
-            const market = row[`market${marketIndex}`];
-            const conf   = row[`conf${marketIndex}`];
-
-            // ── Use your actual why descriptions from Sheets ──────
-            // Falls back to generic text only if the column is empty
-            const whyText = row[`why${marketIndex}`] || '';
-            const hasWhy  = whyText && whyText.toString().trim().length > 0;
-
-            const analysis = hasWhy
-              ? whyText
-              : "AI analysis based on historical patterns, team form, and statistical modeling for this market.";
-
-            content.innerHTML = `
-                <div style="margin-bottom: 2rem;">
-                    <div style="background: var(--primary); color: white; display: inline-block; padding: 0.3rem 0.8rem; border-radius: 8px; font-size: 0.7rem; font-weight: 800; margin-bottom: 1rem;">${row.competition}</div>
-                    <h2 style="text-align: left; margin-bottom: 0.5rem; font-size: 1.8rem; color: #0f172a;">${row.match}</h2>
-                    <p style="color: var(--text-muted); font-weight: 600;">${new Date(row.date || new Date().toISOString()).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} • ${row.kickoff}</p>
-                </div>
-
-                <div style="background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 1px solid #f1f5f9; margin-bottom: 2rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h3 style="font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Selected Market</h3>
-                        <span style="font-weight: 800; color: var(--primary); font-size: 1.2rem;">${conf}% Confidence</span>
-                    </div>
-                    <p style="font-size: 1.3rem; font-weight: 800; color: #0f172a;">${market}</p>
-                </div>
-
-                <div style="display: grid; gap: 1.5rem;">
-                    <div style="background: white; border-radius: 16px; padding: 1.2rem;">
-                        <h4 style="display: flex; align-items: center; gap: 0.5rem; color: #0f172a; margin-bottom: 0.7rem; font-size: 1.1rem;">&#128269; Why This Market</h4>
-                        <p style="font-size: 1rem; line-height: 1.7; color: #475569;">${analysis}</p>
-                    </div>
-                </div>
-
-                <div style="margin-top: 2.5rem;">
-                    <button onclick="closeAnalysis()" class="btn" style="width: 100%;">Close Analysis</button>
-                </div>
-            `;
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeAnalysis() {
-            document.getElementById('analysisModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        function closeStats() {
-            document.getElementById('statsModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        // Routes click to Learn Why (pre-match) or Stats (post-match)
-        function openMarketAction(row, marketIndex) {
-            const matchName  = row.match;
-            const marketType = row.marketType;
-            const result = row['result' + marketIndex] || '';
-            const isPostMatch = result && result !== 'PENDING' && result !== '';
-            if (isPostMatch) {
-                openStats(matchName, marketType, marketIndex, row, true);
-            } else {
-                openAnalysis(matchName, marketType, marketIndex);
-            }
-        }
-
-        // Opens stats modal — pre-match (fast) or post-match (live API)
-        async function openStats(matchName, marketType, marketIndex, row, isPostMatch) {
-            document.getElementById('statsModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            const content = document.getElementById('statsContent');
-            content.innerHTML = '<div style="text-align:center; padding:3rem; color:#64748b; font-size:1rem;">Loading stats...</div>';
-
-            const market = row ? row['market' + marketIndex] : '';
-            const conf   = row ? row['conf'   + marketIndex] : '';
-            const result = row ? row['result' + marketIndex] : '';
-
-            const resultBadge = result === 'WIN'
-                ? '<span style="background:#dcfce7; color:#166534; padding:0.3rem 0.8rem; border-radius:8px; font-weight:800; font-size:0.85rem;">&#10003; WIN</span>'
-                : result === 'LOSS'
-                ? '<span style="background:#fee2e2; color:#991b1b; padding:0.3rem 0.8rem; border-radius:8px; font-weight:800; font-size:0.85rem;">&#10007; LOSS</span>'
-                : result === 'VOID'
-                ? '<span style="background:#f1f5f9; color:#475569; padding:0.3rem 0.8rem; border-radius:8px; font-weight:800; font-size:0.85rem;">VOID</span>'
-                : '';
-
-            try {
-                const postParam = isPostMatch ? '&postmatch=true' : '&postmatch=false';
-                const res  = await fetch(APPS_SCRIPT + '?action=getMatchStats&match=' + encodeURIComponent(matchName) + postParam);
-                const data = await res.json();
-
-                if (data.status !== 'success' || !data.stats) {
-                    content.innerHTML = '<div style="padding:2rem; text-align:center; color:#64748b;">No stats available for this match.</div>';
-                    return;
-                }
-
-                const s    = data.stats;
-                const home = s.home;
-                const away = s.away;
-                const score = data.score || null;
-
-                const scoreHtml = score
-                    ? '<div style="font-size:2rem; font-weight:800; text-align:center; margin:1rem 0; color:#0f172a;">' + score.homeTeam + ' <span style="color:var(--primary);">' + score.home + ' - ' + score.away + '</span> ' + score.awayTeam + '</div>'
-                    : '';
-
-                const h2hHtml = data.h2h ? `
-                    <div style="background:#f1f5f9; padding:1.2rem; border-radius:16px; margin-top:1rem;">
-                        <h4 style="color:var(--primary); margin-bottom:0.8rem; font-size:0.9rem; text-transform:uppercase;">&#128200; Head to Head (Last ${data.h2h.total} Games)</h4>
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.5rem; text-align:center;">
-                            <div><div style="font-size:1.4rem; font-weight:800; color:#0f172a;">${data.h2h.homeWins}</div><div style="font-size:0.75rem; color:#64748b;">Home Wins</div></div>
-                            <div><div style="font-size:1.4rem; font-weight:800; color:#64748b;">${data.h2h.draws}</div><div style="font-size:0.75rem; color:#64748b;">Draws</div></div>
-                            <div><div style="font-size:1.4rem; font-weight:800; color:#0f172a;">${data.h2h.awayWins}</div><div style="font-size:0.75rem; color:#64748b;">Away Wins</div></div>
-                        </div>
-                        <div style="margin-top:0.8rem; font-size:0.85rem; color:#475569; display:flex; gap:1.5rem; justify-content:center;">
-                            <span>BTTS Rate: <strong>${data.h2h.bttsRate}</strong></span>
-                            <span>Avg Goals: <strong>${data.h2h.avgGoalsPerGame}</strong></span>
-                        </div>
-                    </div>` : '';
-
-                const statRow = (label, homeVal, awayVal, icon) => `
-                    <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:0.6rem 0; border-bottom:1px solid #f1f5f9; gap:0.5rem;">
-                        <div style="text-align:right; font-weight:700; color:#0f172a;">${homeVal !== undefined ? homeVal : 'N/A'}</div>
-                        <div style="text-align:center; font-size:0.75rem; color:#64748b; min-width:100px;">${icon} ${label}</div>
-                        <div style="text-align:left; font-weight:700; color:#0f172a;">${awayVal !== undefined ? awayVal : 'N/A'}</div>
-                    </div>`;
-
-                content.innerHTML = `
-                    <div style="margin-bottom:1.5rem;">
-                        <div style="background:var(--primary); color:white; display:inline-block; padding:0.3rem 0.8rem; border-radius:8px; font-size:0.7rem; font-weight:800; margin-bottom:0.8rem;">${isPostMatch ? 'MATCH STATS' : 'PRE-MATCH STATS'}</div>
-                        <h2 style="font-size:1.5rem; color:#0f172a; margin-bottom:0.3rem;">${matchName}</h2>
-                        ${scoreHtml}
-                        <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; margin-top:0.5rem;">
-                            <span style="background:#f8fafc; padding:0.3rem 0.8rem; border-radius:8px; font-weight:700; font-size:0.9rem;">${market}</span>
-                            <span style="color:var(--primary); font-weight:800;">${conf}% Confidence</span>
-                            ${resultBadge}
-                        </div>
-                    </div>
-
-                    <div style="background:#f8fafc; border-radius:20px; padding:1.2rem; margin-bottom:1rem;">
-                        <div style="display:grid; grid-template-columns:1fr auto 1fr; margin-bottom:0.5rem;">
-                            <div style="font-weight:800; color:#0f172a; font-size:0.9rem; text-align:right;">${home.team || 'Home'}</div>
-                            <div></div>
-                            <div style="font-weight:800; color:#0f172a; font-size:0.9rem;">${away.team || 'Away'}</div>
-                        </div>
-                        ${statRow('Fouls',          home.fouls,          away.fouls,          '&#128308;')}
-                        ${statRow('Corners',        home.corners,        away.corners,        '&#128210;')}
-                        ${statRow('Yellow Cards',   home.yellowCards,    away.yellowCards,    '&#127DF;')}
-                        ${statRow('Red Cards',      home.redCards,       away.redCards,       '&#127FF;')}
-                        ${statRow('Saves',          home.saves,          away.saves,          '&#129354;')}
-                        ${statRow('Shots on Target',home.shotsOnTarget,  away.shotsOnTarget,  '&#127919;')}
-                        ${statRow('Possession',     home.ballPossession, away.ballPossession, '&#9917;')}
-                    </div>
-
-                    ${h2hHtml}
-
-                    <div style="margin-top:2rem;">
-                        <button onclick="closeStats()" class="btn" style="width:100%;">Close</button>
-                    </div>
-                `;
-
-            } catch(err) {
-                content.innerHTML = '<div style="padding:2rem; text-align:center; color:#ef4444;">Failed to load stats. Please try again.</div>';
-                console.error('Stats error:', err);
-            }
-        }
-
-        function scrollToSignup() { document.getElementById('signup').scrollIntoView({ behavior: 'smooth' }); }
-        function handleHeroAction() { if (loggedInUser) { document.getElementById('todayPredictions').scrollIntoView({ behavior: 'smooth' }); } else { scrollToSignup(); } }
-        function loadResultsByDate() { renderResults(); }
-
-
-        init();
-        detectRegion();
-    </script>
-</body>
-</html>
-
-
-    
