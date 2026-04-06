@@ -97,6 +97,10 @@
         @media (max-width: 768px) {
             .hero h2 { font-size: 2.5rem; }
         }
+        .team-logos { display:flex; align-items:center; justify-content:center; gap:0.8rem; margin-bottom:0.5rem; }
+        .team-logo  { width:28px; height:28px; object-fit:contain; border-radius:4px; }
+        .logo-vs    { font-size:0.7rem; color:#94a3b8; font-weight:700; }
+        .match-title-wrap { display:flex; flex-direction:column; align-items:flex-start; }
     </style>
 </head>
 <body>
@@ -129,18 +133,21 @@
             
             <div class="stats">
                 <div class="stat-box">
-                    <div class="stat-number">80-90%</div>
+                    <div class="stat-number" id="hiddenWinRate">--</div>
                     <p>Win Rate (Hidden)</p>
+                    <p id="hiddenWinDetail" style="font-size:0.7rem; color:#94a3b8; margin-top:0.3rem;"></p>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-number">50-65%</div>
+                    <div class="stat-number" id="familiarWinRate">--</div>
                     <p>Win Rate (Familiar)</p>
+                    <p id="familiarWinDetail" style="font-size:0.7rem; color:#94a3b8; margin-top:0.3rem;"></p>
                 </div>
                 <div class="stat-box">
                     <div class="stat-number">6-24</div>
                     <p>Matches Daily</p>
                 </div>
             </div>
+
             <div style="text-align: center;">
                 <button onclick="handleHeroAction()" class="btn">Unlock 🔓 Today's Prediction Now</button>
                 <p style="margin-top: 1rem; font-size: 0.85rem; color: #64748b; font-weight: 600;">Only available to trial & premium users</p>
@@ -271,20 +278,18 @@
                     </div>
                     <div style="margin-bottom:1.5rem;">
                         <p style="font-size:0.95rem; color:#475569;">AI predictions. Daily. 7+ leagues. Hidden Markets. Familiar Markets. Top 3 picks per match. Full analysis. 30 days.</p>
-                    </div>
-                    <button onclick="makePayment()" class="btn btn-green" style="width:100%;">Upgrade Now</button>
-                    <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.8rem; text-align:center;">Secure payment. Cancel anytime.</p>
-                </div>
+                     </div>
+<button onclick="makePayment()" class="btn btn-green" style="width:100%;">Upgrade Now</button>
 
-            </div>
-        </div>
-    </section>
+<p style="font-size:0.8rem; color:#94a3b8; margin-top:0.8rem; text-align:center;">Secure payment. Cancel anytime.</p>
+                 </div>
 
-    <section id="signup" class="section">
-        <div class="container">
-            <h2>Start Your Free 7-Day Trial</h2>
-            <div class="login-section">
-                <!-- Shared message box -->
+             </div>
+         </div>
+      </section>
+
+      <section id="signup" class="section"> <div class="container"> <h2>Start Your Free 7-Day Trial</h2> <div class="login-section">
+          <!-- Shared message box -->
                 <div id="signupMsg" style="display:none; padding:1rem; border-radius:12px; margin-bottom:1.5rem; font-weight:700; text-align:center;"></div>
 
                 <!-- STEP 1: Details -->
@@ -374,7 +379,7 @@
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 
-        const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxDeTWup_3tHDtVNDV082HOlCeYbJDcnu5XfcxCVcH8WGy83gGFTIoC5vSJcHu_tAF-Pw/exec';
+        const APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbx24ma9EopY7xvAhUsNLwyHjosGJSmbNl3uYdULmdvpzTQ0wntpC5zeEdDDyMA8kHJUVA/exec';
         const FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK-ea43f13a75ac4e8a27a5bf196d6a028c-X'; 
 
         let loggedInUser = JSON.parse(localStorage.getItem('prediktUser')) || null;
@@ -385,8 +390,45 @@
             initDates();
             updateAuthUI();
             loadResults();
+            loadWinRates();
             if (loggedInUser) {
                 loadTodayPredictions();
+            }
+        }
+
+        async function loadWinRates() {
+            try {
+                const res  = await fetch(APPS_SCRIPT + '?action=getWinRates');
+                const data = await res.json();
+
+                if (data.status !== 'success') return;
+
+                const hiddenEl   = document.getElementById('hiddenWinRate');
+                const familiarEl = document.getElementById('familiarWinRate');
+                const hiddenDet  = document.getElementById('hiddenWinDetail');
+                const familiarDet= document.getElementById('familiarWinDetail');
+
+                if (data.hiddenWinRate !== null && data.hiddenTotal > 0) {
+                    hiddenEl.textContent  = data.hiddenWinRate + '%';
+                    hiddenDet.textContent = data.hiddenWins + '/' + data.hiddenTotal + ' markets';
+                } else {
+                    hiddenEl.textContent  = '80-90%';
+                    hiddenDet.textContent = 'Based on AI model';
+                }
+
+                if (data.familiarWinRate !== null && data.familiarTotal > 0) {
+                    familiarEl.textContent  = data.familiarWinRate + '%';
+                    familiarDet.textContent = data.familiarWins + '/' + data.familiarTotal + ' markets';
+                } else {
+                    familiarEl.textContent  = '50-65%';
+                    familiarDet.textContent = 'Based on AI model';
+                }
+
+            } catch(e) {
+                // Fallback to static if API fails
+                document.getElementById('hiddenWinRate').textContent   = '80-90%';
+                document.getElementById('familiarWinRate').textContent = '50-65%';
+                console.error('Win rates load error:', e);
             }
         }
 
@@ -405,6 +447,7 @@
                 select.appendChild(opt);
             }
         }
+
         async function loadResults() {
             try {
                 const res = await fetch(`${APPS_SCRIPT}?action=getResults`);
@@ -481,177 +524,7 @@
             if (!isNaN(d.getTime())) {
                 matchDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' • ';
             }
-
-            return `
-                <div class="result-card">
-                    <div class="match-header">
-                        <div class="match-title">${g.match}</div>
-                        <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">${g.competition} • ${matchDate}${kickoffTime}</div>
-                    </div>
-                    ${renderMarkets(g.hidden, 'Hidden Markets', '🎯')}
-                    ${renderMarkets(g.familiar, 'Familiar Markets', '📌')}
-                </div>
-            `;
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const phone = document.getElementById('loginPhone').value;
-            try {
-                const res = await fetch(`${APPS_SCRIPT}?action=checkMember&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`);
-                const data = await res.json();
-                if (data.valid) {
-                    loggedInUser = { email, phone };
-                    localStorage.setItem('prediktUser', JSON.stringify(loggedInUser));
-                    location.reload();
-                } else { alert('Account not found.'); }
-            } catch (e) { alert('Login error.'); }
-                                        }
-        // ── Region & payment config ──────────────────────────────────
-        let _payRegion = { amount:3500, currency:'NGN', display:'&#8358;3,500' };
-        let _otpPending = {};
-
-        // ── IP Detection (runs silently on load) ──────────────
-        async function detectRegion() {
-            try {
-                const res  = await fetch('https://ipapi.co/json/');
-                const data = await res.json();
-                const cc   = data.country_code || 'NG';
-                const continent = data.continent_code || '';
-
-                const map = {
-                    // ── Africa ───────────────────────────────────────────
-                    NG: { amount:3500,  currency:'NGN', display:'&#8358;3,500'  },
-                    GH: { amount:160,   currency:'GHS', display:'GH&#8373;160'  },
-                    KE: { amount:1400,  currency:'KES', display:'KES 1,400'     },
-                    ZA: { amount:210,   currency:'ZAR', display:'R210'          },
-                    UG: { amount:43000, currency:'UGX', display:'UGX 43,000'    },
-                    TZ: { amount:27500, currency:'TZS', display:'TZS 27,500'    },
-                    ZM: { amount:220,   currency:'ZMW', display:'ZMW 220'       },
-                    RW: { amount:15500, currency:'RWF', display:'RWF 15,500'    },
-                    // ── Europe ───────────────────────────────────────────
-                    GB: { amount:10,    currency:'GBP', display:'&pound;10'     },
-                    DE: { amount:10,    currency:'EUR', display:'&euro;10'      },
-                    FR: { amount:10,    currency:'EUR', display:'&euro;10'      },
-                    ES: { amount:10,    currency:'EUR', display:'&euro;10'      },
-                    IT: { amount:10,    currency:'EUR', display:'&euro;10'      },
-                    NL: { amount:10,    currency:'EUR', display:'&euro;10'      },
-                    BE: { amount:10,    currency:'EUR', display:'&euro;10'      },
-                    SE: { amount:100,   currency:'SEK', display:'SEK 100'       },
-                    NO: { amount:100,   currency:'NOK', display:'NOK 100'       },
-                    // ── Americas ─────────────────────────────────────────
-                    US: { amount:15,    currency:'USD', display:'$15'           },
-                    CA: { amount:20,    currency:'CAD', display:'CA$20'         },
-                };
-
-                if (map[cc]) {
-                    _payRegion = map[cc];
-                } else if (continent === 'EU') {
-                    // Unlisted European country — default £8
-                    _payRegion = { amount:8, currency:'GBP', display:'&pound;8' };
-                } else if (continent === 'AF') {
-                    // Unlisted African country — default ₦3,500 NGN
-                    _payRegion = { amount:3500, currency:'NGN', display:'&#8358;3,500' };
-                } else {
-                    // Rest of world
-                    _payRegion = { amount:10, currency:'USD', display:'$10' };
-                }
-
-                // Update price card display
-                const el = document.getElementById('priceDisplay');
-                if (el) el.innerHTML = _payRegion.display + '<span style="font-size:1rem; opacity:0.6; font-weight:400;">/mo</span>';
-
-            } catch(e) { /* default Nigeria stays */ }
-        }
-
-        // ── STEP 1: Send OTP ──────────────────────────────────
-// ── STEP 1: Send OTP ──────────────────────────────────
-// ── STEP 1: Send OTP ──────────────────────────────────────
-        async function handleSignup(e) {
-            e.preventDefault();
-            const name  = document.getElementById('name').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const btn   = document.getElementById('signupBtn');
-            btn.disabled = true;
-            btn.textContent = 'Sending code...';
-            showSignupMsg('', 'neutral');
-            try {
-                const url  = APPS_SCRIPT + '?action=sendOTP&name=' + encodeURIComponent(name) + '&email=' + encodeURIComponent(email) + '&phone=' + encodeURIComponent(phone);
-                const res  = await fetch(url);
-                const data = await res.json();
-                if (data.success) {
-                    _otpPending = { name, email, phone };
-                    document.getElementById('signupStep1').style.display = 'none';
-                    document.getElementById('signupStep2').style.display = 'block';
-                    document.getElementById('otpEmailDisplay').textContent = email;
-                    document.getElementById('otpInput').value = '';
-                    document.getElementById('otpInput').focus();
-                    showSignupMsg('Code sent! Check your inbox and spam folder.', 'success');
-                } else if (data.message === 'already_registered') {
-                    showSignupMsg('This email is already registered. Please login above.', 'info');
-                    btn.disabled = false; btn.textContent = 'Activate Trial';
-                } else {
-                    showSignupMsg('Could not send code: ' + (data.message || 'Try again.'), 'error');
-                    btn.disabled = false; btn.textContent = 'Activate Trial';
-                }
-            } catch(err) {
-                showSignupMsg('Network error. Check your connection and try again.', 'error');
-                btn.disabled = false; btn.textContent = 'Activate Trial';
-            }
-            return false;
-        }
-
-        // ── STEP 2: Verify OTP ────────────────────────────────────
-        async function handleOTPVerify(e) {
-            e.preventDefault();
-            const otp = document.getElementById('otpInput').value.trim();
-            const btn = document.getElementById('verifyBtn');
-            if (otp.length !== 6) { showSignupMsg('Please enter the full 6-digit code.', 'error'); return false; }
-            btn.disabled = true; btn.textContent = 'Verifying...';
-            try {
-                const url  = APPS_SCRIPT + '?action=verifyOTP&email=' + encodeURIComponent(_otpPending.email) + '&otp=' + encodeURIComponent(otp);
-                const res  = await fetch(url);
-                const data = await res.json();
-                if (data.success) {
-                    document.getElementById('signupStep2').style.display = 'none';
-                    showSignupMsg('Identity verified! Your 7-Day Trial is ACTIVE. Login above to access predictions.', 'success');
-                } else {
-                    showSignupMsg((data.message || 'Verification failed. Try again.'), 'error');
-                    btn.disabled = false; btn.textContent = 'Verify & Activate Trial';
-                }
-            } catch(err) {
-                showSignupMsg('Network error. Try again.', 'error');
-                btn.disabled = false; btn.textContent = 'Verify & Activate Trial';
-            }
-            return false;
-        }
-
-        // ── Resend OTP ────────────────────────────────────────────
-        async function resendOTP() {
-            const btn = document.getElementById('resendBtn');
-            btn.disabled = true; btn.textContent = 'Sending...';
-            try {
-                const url  = APPS_SCRIPT + '?action=sendOTP&name=' + encodeURIComponent(_otpPending.name) + '&email=' + encodeURIComponent(_otpPending.email) + '&phone=' + encodeURIComponent(_otpPending.phone);
-                const res  = await fetch(url);
-                const data = await res.json();
-                showSignupMsg(data.success ? 'New code sent! Check your inbox.' : 'Could not resend. Try again.', data.success ? 'success' : 'error');
-            } catch(e) { showSignupMsg('Network error. Try again.', 'error'); }
-            setTimeout(() => { btn.disabled = false; btn.textContent = 'Resend Code'; }, 30000);
-                        }
-        // ── Go back to Step 1 ─────────────────────────────────────
-        function resetSignupForm() {
-            _otpPending = {};
-            document.getElementById('signupStep2').style.display = 'none';
-            document.getElementById('signupStep1').style.display = 'block';
-            document.getElementById('signupBtn').disabled = false;
-            document.getElementById('signupBtn').textContent = 'Activate Trial';
-            document.getElementById('signupForm').reset();
-            showSignupMsg('', 'neutral');
-        }
-
-        // ── Message helper ────────────────────────────────────────
+            // ── Message helper ────────────────────────────────────────
         function showSignupMsg(text, type) {
             const el = document.getElementById('signupMsg');
             if (!text) { el.style.display = 'none'; return; }
@@ -774,6 +647,7 @@
             document.getElementById('statsModal').style.display = 'none';
             document.body.style.overflow = 'auto';
         }
+
         // Routes click to Learn Why (pre-match) or Stats (post-match)
         function openMarketAction(row, marketIndex) {
             const matchName  = row.match;
@@ -896,3 +770,6 @@
     </script>
 </body>
 </html>
+
+
+    
