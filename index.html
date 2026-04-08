@@ -169,7 +169,6 @@
             </div>
         </div>
     </section>
-
     <section id="todayPredictions" class="section alt" style="display: none;">
         <div class="container">
             <div style="background: #4f46e5; color: white; display: inline-block; padding: 0.4rem 1rem; border-radius: 12px; font-weight: 800; font-size: 0.8rem; margin-bottom: 1rem;">🎯 MEMBER ONLY</div>
@@ -270,6 +269,7 @@
                     </div>
                     <button onclick="scrollToSignup()" class="btn" style="width:100%;">Start Free Trial</button>
                 </div>
+
                 <div class="price-card">
                     <h3>💎 Premium</h3>
                     <div id="priceDisplay" style="font-size:2.2rem; font-weight:800; color:var(--primary); margin:1rem 0;">
@@ -302,9 +302,8 @@
                         <div class="form-group"><label>Phone Number *</label><input type="tel" id="phone" required></div>
                         <button type="submit" id="signupBtn" class="btn" style="width:100%;">Activate Trial</button>
                     </form>
-                </div>
-
-                <!-- STEP 2: OTP (hidden until code is sent) -->
+                    </div>
+                    <!-- STEP 2: OTP (hidden until code is sent) -->
                 <div id="signupStep2" style="display:none;">
                     <div style="text-align:center; margin-bottom:1.5rem;">
                         <div style="font-size:2.5rem; margin-bottom:0.5rem;">&#128231;</div>
@@ -397,6 +396,7 @@
                 loadTodayPredictions();
             }
         }
+
         async function loadWinRates() {
             try {
                 const res  = await fetch(APPS_SCRIPT + '?action=getWinRates');
@@ -433,7 +433,7 @@
             }
         }
 
-        function initDates() {
+function initDates() {
             const select = document.getElementById('dateSelect');
             for (let i = 1; i <= 7; i++) {
                 const d = new Date();
@@ -449,7 +449,7 @@
             }
         }
 
-        async function loadResults() {
+async function loadResults() {
             try {
                 const res = await fetch(`${APPS_SCRIPT}?action=getResults`);
                 allResults = await res.json();
@@ -457,7 +457,7 @@
             } catch (e) { console.error(e); }
         }
 
-        function renderResults() {
+function renderResults() {
             const grid = document.getElementById('resultsGrid');
             const selectedTime = parseInt(document.getElementById('dateSelect').value);
             const filtered = allResults.filter(r => {
@@ -471,7 +471,7 @@
                 return;
             }
 
-            const groups = groupMatches(filtered);
+const groups = groupMatches(filtered);
             grid.innerHTML = Object.values(groups).map(g => createMatchCard(g)).join('');
         }
 
@@ -492,7 +492,6 @@
                 if (r === 'LOSS') return '<span class="result-badge result-loss">LOSS</span>';
                 return '<span class="result-badge result-pending">PENDING</span>';
             };
-
             const renderMarkets = (list, title, icon) => {
                 if (list.length === 0) return '';
                 return `
@@ -756,6 +755,8 @@
                 }
             });
         }
+
+        
         function updateAuthUI() {
             const auth = document.getElementById('navAuth');
             if (loggedInUser) {
@@ -794,7 +795,6 @@
                     <h2 style="text-align: left; margin-bottom: 0.5rem; font-size: 1.8rem; color: #0f172a;">${row.match}</h2>
                     <p style="color: var(--text-muted); font-weight: 600;">${new Date(row.date || new Date().toISOString()).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} • ${row.kickoff}</p>
                 </div>
-
                 <div style="background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 1px solid #f1f5f9; margin-bottom: 2rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <h3 style="font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Selected Market</h3>
@@ -950,6 +950,3 @@
     </script>
 </body>
 </html>
-        
-
-            
