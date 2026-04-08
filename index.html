@@ -169,6 +169,7 @@
             </div>
         </div>
     </section>
+
     <section id="todayPredictions" class="section alt" style="display: none;">
         <div class="container">
             <div style="background: #4f46e5; color: white; display: inline-block; padding: 0.4rem 1rem; border-radius: 12px; font-weight: 800; font-size: 0.8rem; margin-bottom: 1rem;">🎯 MEMBER ONLY</div>
@@ -281,8 +282,7 @@
                     <button onclick="makePayment()" class="btn btn-green" style="width:100%;">Upgrade Now</button>
                     <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.8rem; text-align:center;">Secure payment. Cancel anytime.</p>
                 </div>
-
-            </div>
+                </div>
         </div>
     </section>
 
@@ -302,8 +302,9 @@
                         <div class="form-group"><label>Phone Number *</label><input type="tel" id="phone" required></div>
                         <button type="submit" id="signupBtn" class="btn" style="width:100%;">Activate Trial</button>
                     </form>
-                    </div>
-                    <!-- STEP 2: OTP (hidden until code is sent) -->
+                </div>
+
+                <!-- STEP 2: OTP (hidden until code is sent) -->
                 <div id="signupStep2" style="display:none;">
                     <div style="text-align:center; margin-bottom:1.5rem;">
                         <div style="font-size:2.5rem; margin-bottom:0.5rem;">&#128231;</div>
@@ -351,9 +352,11 @@
             <span class="close" onclick="closeLogin()">&times;</span>
             <h2 style="margin-bottom: 2rem;">Welcome Back</h2>
             <form onsubmit="handleLogin(event)">
+                <div id="loginError" style="display:none; background:#fee2e2; color:#991b1b; padding:0.8rem 1rem; border-radius:10px; font-size:0.85rem; margin-bottom:1rem; font-weight:600;"></div>
                 <div class="form-group"><label>Email *</label><input type="email" id="loginEmail" required></div>
-                <div class="form-group"><label>Phone *</label><input type="tel" id="loginPhone" required></div>
+                <div class="form-group"><label>Phone *</label><input type="tel" id="loginPhone" placeholder="Same number you signed up with" required></div>
                 <button type="submit" class="btn" style="width: 100%;">Login</button>
+                <p style="text-align:center; margin-top:1rem; font-size:0.8rem; color:#64748b;">Don't have an account? <a href="#signup" onclick="closeLogin(); scrollToSignup();" style="color:var(--primary); font-weight:700;">Start Free Trial</a></p>
             </form>
         </div>
     </div>
@@ -433,7 +436,7 @@
             }
         }
 
-function initDates() {
+        function initDates() {
             const select = document.getElementById('dateSelect');
             for (let i = 1; i <= 7; i++) {
                 const d = new Date();
@@ -448,22 +451,70 @@ function initDates() {
                 select.appendChild(opt);
             }
         }
-
-async function loadResults() {
+        async function loadResults() {
             try {
-                const res = await fetch(`${APPS_SCRIPT}?action=getResults`);
-                allResults = await res.json();
+                const res  = await fetch(APPS_SCRIPT + '?action=getResults');
+                const raw  = await res.json();
+
+                // Transform flat results format into the market-row format
+                // that groupMatches() and createMatchCard() understand.
+                // getResults returns one row per match with h_m1/h_r1 etc.
+                // We need two rows per match: one HIDDEN, one FAMILIAR.
+                const transformed = [];
+                (Array.isArray(raw) ? raw : []).forEach(r => {
+                    // Only include rows that have at least one market
+                    if (r.h_m1 || r.h_m2 || r.h_m3) {
+                        transformed.push({
+                            date:        r.date,
+                            match:       r.match,
+                            competition: r.competition,
+                            kickoff:     r.kickoff,
+                            marketType:  'HIDDEN',
+                            market1: r.h_m1 || '', conf1: r.h_c1 || '', result1: r.h_r1 || '', why1: '',
+                            market2: r.h_m2 || '', conf2: r.h_c2 || '', result2: r.h_r2 || '', why2: '',
+                            market3: r.h_m3 || '', conf3: r.h_c3 || '', result3: r.h_r3 || '', why3: ''
+                        });
+                    }
+                    if (r.f_m1 || r.f_m2 || r.f_m3) {
+                        transformed.push({
+                            date:        r.date,
+                            match:       r.match,
+                            competition: r.competition,
+                            kickoff:     r.kickoff,
+                            marketType:  'FAMILIAR',
+                            market1: r.f_m1 || '', conf1: r.f_c1 || '', result1: r.f_r1 || '', why1: '',
+                            market2: r.f_m2 || '', conf2: r.f_c2 || '', result2: r.f_r2 || '', why2: '',
+                            market3: r.f_m3 || '', conf3: r.f_c3 || '', result3: r.f_r3 || '', why3: ''
+                        });
+                    }
+                });
+
+                allResults = transformed;
                 renderResults();
-            } catch (e) { console.error(e); }
+
+                // Recalculate win rates from this data immediately
+                recalcWinRatesFromResults(transformed);
+
+            } catch (e) { console.error('loadResults error:', e); }
         }
 
-function renderResults() {
+        function renderResults() {
             const grid = document.getElementById('resultsGrid');
             const selectedTime = parseInt(document.getElementById('dateSelect').value);
             const filtered = allResults.filter(r => {
-                const d = new Date(r.date);
-                d.setHours(0,0,0,0);
-                return d.getTime() === selectedTime;
+                if (!r.date) return false;
+                try {
+                    // Handle "4/7/2026", ISO strings, Date objects
+                    let d = new Date(r.date);
+                    // If invalid, try parsing "M/D/YYYY" format manually
+                    if (isNaN(d.getTime()) && typeof r.date === 'string' && r.date.includes('/')) {
+                        const parts = r.date.split('/');
+                        if (parts.length === 3) d = new Date(parts[2], parts[0]-1, parts[1]);
+                    }
+                    if (isNaN(d.getTime())) return false;
+                    d.setHours(0,0,0,0);
+                    return d.getTime() === selectedTime;
+                } catch(e) { return false; }
             });
 
             if (filtered.length === 0) {
@@ -471,7 +522,7 @@ function renderResults() {
                 return;
             }
 
-const groups = groupMatches(filtered);
+            const groups = groupMatches(filtered);
             grid.innerHTML = Object.values(groups).map(g => createMatchCard(g)).join('');
         }
 
@@ -492,23 +543,33 @@ const groups = groupMatches(filtered);
                 if (r === 'LOSS') return '<span class="result-badge result-loss">LOSS</span>';
                 return '<span class="result-badge result-pending">PENDING</span>';
             };
+
             const renderMarkets = (list, title, icon) => {
                 if (list.length === 0) return '';
+                // Store row objects globally so onclick can access them by key
+                // This is the fix for: onclick="openMarketAction(r, i)" where r
+                // is undefined in global scope (r is local to the .map() closure)
+                window._prediktRows = window._prediktRows || {};
                 return `
                     <div class="market-section">
                         <h4 style="font-size: 0.8rem; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">${icon} ${title}</h4>
-                        ${list.map(r => [1,2,3].map(i => r[`market${i}`] ? `
+                        ${list.map(r => {
+                            // Create a stable key for each row using match + marketType
+                            const rowKey = (r.match + '_' + r.marketType).replace(/[^a-zA-Z0-9]/g, '_');
+                            window._prediktRows[rowKey] = r;
+                            return [1,2,3].map(i => r['market'+i] ? `
                             <div class="market-item">
                                 <div style="display: flex; flex-direction: column; gap: 0.2rem;">
-                                    <span style="font-weight: 700;">${r[`market${i}`]}</span>
-                                    <a href="javascript:void(0)" onclick="openMarketAction(r, ${i})" style="font-size:0.7rem; color:var(--primary); text-decoration:none; font-weight:700;">${r['result'+i] && r['result'+i] !== 'PENDING' && r['result'+i] !== '' ? 'Stats →' : 'Learn why →'}</a>
+                                    <span style="font-weight: 700;">${r['market'+i]}</span>
+                                    <a href="javascript:void(0)" onclick="openStoredRow('${rowKey}', ${i})" style="font-size:0.7rem; color:var(--primary); text-decoration:none; font-weight:700;">${r['result'+i] && r['result'+i] !== 'PENDING' && r['result'+i] !== '' ? 'Stats →' : 'Learn why →'}</a>
                                 </div>
                                 <div style="text-align: right; display: flex; align-items: center; gap: 0.5rem;">
-                                    <span class="market-conf">${r[`conf${i}`]}%</span>
-                                    ${getBadge(r[`result${i}`])}
+                                    <span class="market-conf">${r['conf'+i]}%</span>
+                                    ${getBadge(r['result'+i])}
                                 </div>
                             </div>
-                        ` : '').join('')).join('')}
+                        ` : '').join('');
+                        }).join('')}
                     </div>
                 `;
             };
@@ -550,19 +611,34 @@ const groups = groupMatches(filtered);
 
         async function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const phone = document.getElementById('loginPhone').value;
+            const email   = document.getElementById('loginEmail').value.toLowerCase().trim();
+            const phone   = document.getElementById('loginPhone').value.trim();
+            const btn     = e.target.querySelector('button[type=submit]');
+            const errEl   = document.getElementById('loginError');
+            if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+            btn.disabled = true; btn.textContent = 'Checking...';
             try {
-                const res = await fetch(`${APPS_SCRIPT}?action=checkMember&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`);
+                const res  = await fetch(APPS_SCRIPT + '?action=checkMember&email=' + encodeURIComponent(email) + '&phone=' + encodeURIComponent(phone));
                 const data = await res.json();
                 if (data.valid) {
                     loggedInUser = { email, phone };
                     localStorage.setItem('prediktUser', JSON.stringify(loggedInUser));
+                    closeLogin();
                     location.reload();
-                } else { alert('Account not found.'); }
-            } catch (e) { alert('Login error.'); }
+                } else {
+                    const msg = 'Account not found. Check your email and phone number match what you signed up with.';
+                    if (errEl) { errEl.style.display = 'block'; errEl.textContent = msg; }
+                    else alert(msg);
+                    btn.disabled = false; btn.textContent = 'Login';
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                const msg = 'Network error. Please check your connection and try again.';
+                if (errEl) { errEl.style.display = 'block'; errEl.textContent = msg; }
+                else alert(msg);
+                btn.disabled = false; btn.textContent = 'Login';
+            }
         }
-
         // ── Region & payment config ──────────────────────────────────
         let _payRegion = { amount:3500, currency:'NGN', display:'&#8358;3,500' };
         let _otpPending = {};
@@ -730,7 +806,6 @@ const groups = groupMatches(filtered);
                 }
             } catch (e) { console.error(e); }
         }
-
         function makePayment() {
             if (!loggedInUser) { alert("Please login or signup first."); scrollToSignup(); return; }
             FlutterwaveCheckout({
@@ -770,12 +845,13 @@ const groups = groupMatches(filtered);
         function openLogin() { document.getElementById('loginModal').style.display = 'block'; }
         function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
         
-        function openAnalysis(matchName, marketType, marketIndex) {
+        function openAnalysis(matchName, marketType, marketIndex, rowData) {
             const modal   = document.getElementById('analysisModal');
             const content = document.getElementById('analysisContent');
 
-            const row = allResults.find(r => r.match === matchName && r.marketType === marketType);
-            if (!row) return;
+            // Use passed rowData if available, else search allResults (for results page)
+            const row = rowData || allResults.find(r => r.match === matchName && r.marketType === marketType);
+            if (!row) { console.warn('openAnalysis: row not found for', matchName, marketType); return; }
 
             const market = row[`market${marketIndex}`];
             const conf   = row[`conf${marketIndex}`];
@@ -789,12 +865,14 @@ const groups = groupMatches(filtered);
               ? whyText
               : "AI analysis based on historical patterns, team form, and statistical modeling for this market.";
 
+            const safeDate = (() => { try { return new Date(row.date || new Date().toISOString()).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }); } catch(e) { return ''; } })();
             content.innerHTML = `
                 <div style="margin-bottom: 2rem;">
-                    <div style="background: var(--primary); color: white; display: inline-block; padding: 0.3rem 0.8rem; border-radius: 8px; font-size: 0.7rem; font-weight: 800; margin-bottom: 1rem;">${row.competition}</div>
-                    <h2 style="text-align: left; margin-bottom: 0.5rem; font-size: 1.8rem; color: #0f172a;">${row.match}</h2>
-                    <p style="color: var(--text-muted); font-weight: 600;">${new Date(row.date || new Date().toISOString()).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} • ${row.kickoff}</p>
+                    <div style="background: var(--primary); color: white; display: inline-block; padding: 0.3rem 0.8rem; border-radius: 8px; font-size: 0.7rem; font-weight: 800; margin-bottom: 1rem;">${row.competition || 'Football'}</div>
+                    <h2 style="text-align: left; margin-bottom: 0.5rem; font-size: 1.8rem; color: #0f172a;">${row.match || ''}</h2>
+                    <p style="color: var(--text-muted); font-weight: 600;">${safeDate}${row.kickoff ? ' • ' + row.kickoff : ''}</p>
                 </div>
+
                 <div style="background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 1px solid #f1f5f9; margin-bottom: 2rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <h3 style="font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Selected Market</h3>
@@ -828,19 +906,31 @@ const groups = groupMatches(filtered);
             document.body.style.overflow = 'auto';
         }
 
+        // Retrieves stored row by key and opens the correct modal
+        // This is called from onclick in match cards (fixes scope issue with r)
+        function openStoredRow(rowKey, marketIndex) {
+            window._prediktRows = window._prediktRows || {};
+            const row = window._prediktRows[rowKey];
+            if (!row) {
+                console.warn('openStoredRow: row not found for key:', rowKey);
+                return;
+            }
+            openMarketAction(row, marketIndex);
+        }
+
         // Routes click to Learn Why (pre-match) or Stats (post-match)
         function openMarketAction(row, marketIndex) {
+            if (!row) { console.warn('openMarketAction: row is undefined'); return; }
             const matchName  = row.match;
             const marketType = row.marketType;
-            const result = row['result' + marketIndex] || '';
+            const result = (row['result' + marketIndex] || '').toString().toUpperCase();
             const isPostMatch = result && result !== 'PENDING' && result !== '';
             if (isPostMatch) {
                 openStats(matchName, marketType, marketIndex, row, true);
             } else {
-                openAnalysis(matchName, marketType, marketIndex);
+                openAnalysis(matchName, marketType, marketIndex, row);
             }
         }
-
         // Opens stats modal — pre-match (fast) or post-match (live API)
         async function openStats(matchName, marketType, marketIndex, row, isPostMatch) {
             document.getElementById('statsModal').style.display = 'block';
@@ -940,8 +1030,70 @@ const groups = groupMatches(filtered);
             }
         }
 
-        function scrollToSignup() { document.getElementById('signup').scrollIntoView({ behavior: 'smooth' }); }
-        function handleHeroAction() { if (loggedInUser) { document.getElementById('todayPredictions').scrollIntoView({ behavior: 'smooth' }); } else { scrollToSignup(); } }
+        // Calculates win rates directly from loaded results data
+        // and updates the homepage stat boxes immediately.
+        // This means rates always reflect the actual marked results.
+        function recalcWinRatesFromResults(data) {
+            let hWins = 0, hTotal = 0, fWins = 0, fTotal = 0;
+
+            data.forEach(r => {
+                const isHidden = String(r.marketType || '').toUpperCase().includes('HIDDEN');
+                [1, 2, 3].forEach(i => {
+                    const result = String(r['result' + i] || '').toUpperCase().trim();
+                    if (result === 'WIN' || result === 'LOSS') {
+                        if (isHidden) { hTotal++; if (result === 'WIN') hWins++; }
+                        else          { fTotal++; if (result === 'WIN') fWins++; }
+                    }
+                });
+            });
+
+            const hiddenRate   = hTotal > 0 ? Math.round((hWins   / hTotal)   * 100) : null;
+            const familiarRate = fTotal > 0 ? Math.round((fWins   / fTotal)   * 100) : null;
+
+            const hiddenEl    = document.getElementById('hiddenWinRate');
+            const familiarEl  = document.getElementById('familiarWinRate');
+            const hiddenDet   = document.getElementById('hiddenWinDetail');
+            const familiarDet = document.getElementById('familiarWinDetail');
+
+            if (hiddenRate !== null && hTotal > 0) {
+                if (hiddenEl)  hiddenEl.textContent  = hiddenRate + '%';
+                if (hiddenDet) hiddenDet.textContent = hWins + '/' + hTotal + ' markets won';
+            } else {
+                if (hiddenEl)  hiddenEl.textContent  = '80-90%';
+                if (hiddenDet) hiddenDet.textContent = 'Based on AI model';
+            }
+
+            if (familiarRate !== null && fTotal > 0) {
+                if (familiarEl)  familiarEl.textContent  = familiarRate + '%';
+                if (familiarDet) familiarDet.textContent = fWins + '/' + fTotal + ' markets won';
+            } else {
+                if (familiarEl)  familiarEl.textContent  = '50-65%';
+                if (familiarDet) familiarDet.textContent = 'Based on AI model';
+            }
+        }
+
+        function scrollToSignup() {
+            const el = document.getElementById('signup');
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+                // Focus the name input to make it obvious
+                setTimeout(() => {
+                    const nameInput = document.getElementById('name');
+                    if (nameInput) nameInput.focus();
+                }, 600);
+            }
+        }
+        function handleHeroAction() {
+            if (loggedInUser) {
+                // Logged in → scroll to today's predictions section
+                const el = document.getElementById('todayPredictions');
+                if (el) { el.scrollIntoView({ behavior: 'smooth' }); }
+                else { loadTodayPredictions(); }
+            } else {
+                // Not logged in → scroll to signup section smoothly
+                scrollToSignup();
+            }
+        }
         function loadResultsByDate() { renderResults(); }
 
 
