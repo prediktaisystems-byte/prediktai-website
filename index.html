@@ -319,6 +319,19 @@
         <div class="container">
             <h2>Start Your Free 7-Day Trial</h2>
             <div class="login-section">
+                <!-- Shared message box -->
+                <div id="signupMsg" style="display:none; padding:1rem; border-radius:12px; margin-bottom:1.5rem; font-weight:700; text-align:center;"></div>
+
+                <!-- STEP 1: Details -->
+                <div id="signupStep1">
+                    <form id="signupForm" onsubmit="return handleSignup(event)">
+                        <div class="form-group"><label>Full Name *</label><input type="text" id="name" required></div>
+                        <div class="form-group"><label>Email Address *</label><input type="email" id="email" required></div>
+                        <div class="form-group"><label>Phone Number *</label><input type="tel" id="phone" required></div>
+                        <button type="submit" id="signupBtn" class="btn" style="width:100%;">Activate Trial</button>
+                    </form>
+                </div>
+
                 <!-- STEP 2: OTP (hidden until code is sent) -->
                 <div id="signupStep2" style="display:none;">
                     <div style="text-align:center; margin-bottom:1.5rem;">
@@ -466,7 +479,6 @@
                 select.appendChild(opt);
             }
         }
-
         async function loadResults() {
             try {
                 const res  = await fetch(APPS_SCRIPT + '?action=getResults', { cache: 'no-store' });
@@ -513,6 +525,7 @@
 
             } catch (e) { console.error('loadResults error:', e); }
         }
+
         function renderResults() {
             const grid         = document.getElementById('resultsGrid');
             const selectedTime = parseInt(document.getElementById('dateSelect').value);
@@ -665,7 +678,6 @@
                 </div>
             `;
         }
-
         async function handleLogin(e) {
             e.preventDefault();
             const email   = document.getElementById('loginEmail').value.toLowerCase().trim();
@@ -753,6 +765,7 @@
 
             } catch(e) { /* default Nigeria stays */ }
         }
+
         // ── STEP 1: Send OTP ──────────────────────────────────
         async function handleSignup(e) {
             e.preventDefault();
@@ -826,7 +839,6 @@
             } catch(e) { showSignupMsg('Network error. Try again.', 'error'); }
             setTimeout(() => { btn.disabled = false; btn.textContent = 'Resend Code'; }, 30000);
         }
-
         // ── Go back to Step 1 ─────────────────────────────────────
         function resetSignupForm() {
             _otpPending = {};
@@ -901,6 +913,8 @@
                 }
             });
         }
+
+        
         function updateAuthUI() {
             const auth    = document.getElementById('navAuth');
             const heroBtn = document.getElementById('heroBtn');
@@ -973,7 +987,6 @@
             modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
-
         function closeAnalysis() {
             document.getElementById('analysisModal').style.display = 'none';
             document.body.style.overflow = 'auto';
