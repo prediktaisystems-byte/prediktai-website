@@ -508,9 +508,9 @@
                             competition: r.competition,
                             kickoff:     r.kickoff,
                             marketType:  'HIDDEN',
-                            market1: r.h_m1 || '', conf1: r.h_c1 || '', result1: r.h_r1 || '', why1: '',
-                            market2: r.h_m2 || '', conf2: r.h_c2 || '', result2: r.h_r2 || '', why2: '',
-                            market3: r.h_m3 || '', conf3: r.h_c3 || '', result3: r.h_r3 || '', why3: ''
+                            market1: r.h_m1 || '', conf1: r.h_c1 || '', result1: r.h_r1 || '', why1: r.h_w1 || '',
+                            market1: r.h_m2 || '', conf2: r.h_c2 || '', result2: r.h_r2 || '', why2: r.h_w2 || '',
+                            market1: r.h_m3 || '', conf3: r.h_c3 || '', result3: r.h_r3 || '', why3: r.h_w3 || ''
                         });
                     }
                     if (r.f_m1 || r.f_m2 || r.f_m3) {
@@ -520,9 +520,9 @@
                             competition: r.competition,
                             kickoff:     r.kickoff,
                             marketType:  'FAMILIAR',
-                            market1: r.f_m1 || '', conf1: r.f_c1 || '', result1: r.f_r1 || '', why1: '',
-                            market2: r.f_m2 || '', conf2: r.f_c2 || '', result2: r.f_r2 || '', why2: '',
-                            market3: r.f_m3 || '', conf3: r.f_c3 || '', result3: r.f_r3 || '', why3: ''
+                            market1: r.h_m1 || '', conf1: r.h_c1 || '', result1: r.h_r1 || '', why1: r.h_w1 || '',
+                            market1: r.h_m2 || '', conf2: r.h_c2 || '', result2: r.h_r2 || '', why2: r.h_w2 || '',
+                            market1: r.h_m3 || '', conf3: r.h_c3 || '', result3: r.h_r3 || '', why3: r.h_w3 || ''
                         });
                     }
                 });
