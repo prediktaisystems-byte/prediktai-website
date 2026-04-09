@@ -904,7 +904,7 @@
                 console.error('loadTodayPredictions error:', e);
                 if (grid) grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#ef4444;">Network error. Please refresh.</div>';
             }
-                    }
+    }
         function makePayment() {
             if (!loggedInUser) { alert("Please login or signup first."); scrollToSignup(); return; }
             FlutterwaveCheckout({
@@ -1040,7 +1040,7 @@
         function openMarketAction(row, marketIndex) {
             if (!row) { console.warn('openMarketAction: row is undefined'); return; }
             openAnalysis(row.match, row.marketType, marketIndex, row);
-        }
+                            }
         // Opens stats modal — pre-match (fast) or post-match (live API)
         async function openStats(matchName, marketType, marketIndex, row, isPostMatch) {
             document.getElementById('statsModal').style.display = 'block';
