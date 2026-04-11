@@ -1066,32 +1066,29 @@
 
         // Retrieves stored row by key and opens analysis modal
         function openStoredRow(rowKey, marketIndex) {
-            window._prediktRows = window._prediktRows || {};
-            let row = window._prediktRows[rowKey];
+    window._prediktRows = window._prediktRows || {};
+    let row = window._prediktRows[rowKey];
 
-            // Fallback: if key not found (happens after page reload between sessions),
-            // search allResults by reconstructing match + marketType from the key
-            if (!row) {
-                const keyParts  = rowKey.split('_');
-                // Try to find in allResults by partial match on the key
-                row = allResults.find(r => {
-                    const k = (r.match + '_' + r.marketType).replace(/[^a-zA-Z0-9]/g, '_');
-                    return k === rowKey;
-                });
-            }
+    if (!row) {
+        // Fallback search in allResults
+        row = allResults.find(r => {
+            const k = (r.match + '_' + r.marketType).replace(/[^a-zA-Z0-9]/g, '_');
+            return k.includes(rowKey.split('_')[0]) && k.includes(rowKey.split('_')[1]);
+        });
+    }
 
-            if (!row) {
-                // Show friendly modal instead of silently failing
-                const modal = document.getElementById('analysisModal');
-                const content = document.getElementById('analysisContent');
-                if (modal && content) {
-                    content.innerHTML = '<div style="padding:2rem;text-align:center;color:#64748b;line-height:2;">Could not load analysis.<br><small>Please refresh the page and try again.</small><br><br><button onclick="closeAnalysis()" class="btn" style="padding:0.5rem 1.5rem;">Close</button></div>';
-                    modal.style.display = 'block';
-                    document.body.style.overflow = 'hidden';
-                }
-                return;
-            }
-            openMarketAction(row, marketIndex);
+    if (!row) {
+        const modal = document.getElementById('analysisModal');
+        const content = document.getElementById('analysisContent');
+        if (modal && content) {
+            content.innerHTML = '<div style="padding:2rem;text-align:center;color:#64748b;line-height:2;">Could not load analysis.<br><small>Please refresh the page and try again.</small><br><br><button onclick="closeAnalysis()" class="btn" style="padding:0.5rem 1.5rem;">Close</button></div>';
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        return;
+    }
+    
+    openAnalysis(row.match, row.marketType, marketIndex, row);
         }
 
         // Always opens Learn Why analysis modal
