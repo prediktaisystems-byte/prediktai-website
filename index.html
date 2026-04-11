@@ -617,77 +617,94 @@
         }
 
         function createMatchCard(g) {
-            const getBadge = (res) => {
-                const r = String(res || '').toUpperCase();
-                if (r === 'WIN') return '<span class="result-badge result-win">WIN</span>';
-                if (r === 'LOSS') return '<span class="result-badge result-loss">LOSS</span>';
-                return '<span class="result-badge result-pending">PENDING</span>';
-            };
+    const getBadge = (res) => {
+        const r = String(res || '').toUpperCase();
+        if (r === 'WIN') return '<span class="result-badge result-win">WIN</span>';
+        if (r === 'LOSS') return '<span class="result-badge result-loss">LOSS</span>';
+        return '<span class="result-badge result-pending">PENDING</span>';
+    };
 
-            const renderMarkets = (list, title, icon) => {
-                if (list.length === 0) return '';
-                // Store row objects globally so onclick can access them by key
-                // This is the fix for: onclick="openMarketAction(r, i)" where r
-                // is undefined in global scope (r is local to the .map() closure)
-                window._prediktRows = window._prediktRows || {};
-                return `
-                    <div class="market-section">
-                        <h4 style="font-size: 0.8rem; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">${icon} ${title}</h4>
-                        ${list.map(r => {
-                            // Create a stable key for each row using match + marketType
-                            const rowKey = (r.match + '_' + r.marketType).replace(/[^a-zA-Z0-9]/g, '_');
-                            window._prediktRows[rowKey] = r;
-                            return [1,2,3].map(i => r['market'+i] ? `
-                            <div class="market-item">
-                                <div style="display: flex; flex-direction: column; gap: 0.2rem;">
-                                    <span style="font-weight: 700;">${r['market'+i]}</span>
-                                    <a href="javascript:void(0)" onclick="openStoredRow('${rowKey}', ${i})" style="font-size:0.7rem; color:var(--primary); text-decoration:none; font-weight:700;">${'Learn why →'}</a>
-                                </div>
-                                <div style="text-align: right; display: flex; align-items: center; gap: 0.5rem;">
-                                    <span class="market-conf">${r['conf'+i]}%</span>
-                                    ${getBadge(r['result'+i])}
-                                </div>
+    const renderMarkets = (list, title, icon) => {
+        if (list.length === 0) return '';
+        
+        // ═══ FIX: Store complete row data with WHY reasons ═══
+        window._prediktRows = window._prediktRows || {};
+        
+        return `
+            <div class="market-section">
+                <h4 style="font-size: 0.8rem; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">${icon} ${title}</h4>
+                ${list.map(r => {
+                    // Create a stable key
+                    const rowKey = (r.match + '_' + r.marketType + '_' + Math.random()).replace(/[^a-zA-Z0-9_]/g, '_');
+                    
+                    // Store the COMPLETE row object with all WHY data
+                    window._prediktRows[rowKey] = {
+                        match: r.match,
+                        competition: r.competition,
+                        kickoff: r.kickoff,
+                        marketType: r.marketType,
+                        date: r.date,
+                        market1: r.market1,
+                        conf1: r.conf1,
+                        why1: r.why1,  // ← WHY IS STORED HERE
+                        market2: r.market2,
+                        conf2: r.conf2,
+                        why2: r.why2,  // ← WHY IS STORED HERE
+                        market3: r.market3,
+                        conf3: r.conf3,
+                        why3: r.why3   // ← WHY IS STORED HERE
+                    };
+                    
+                    return [1,2,3].map(i => r['market'+i] ? `
+                        <div class="market-item">
+                            <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                                <span style="font-weight: 700;">${r['market'+i]}</span>
+                                <a href="javascript:void(0)" onclick="openStoredRow('${rowKey}', ${i})" style="font-size:0.7rem; color:var(--primary); text-decoration:none; font-weight:700;">Learn why →</a>
                             </div>
-                        ` : '').join('');
-                        }).join('')}
-                    </div>
-                `;
-            };
+                            <div style="text-align: right; display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="market-conf">${r['conf'+i]}%</span>
+                                ${getBadge(r['result'+i])}
+                            </div>
+                        </div>
+                    ` : '').join('');
+                }).join('')}
+            </div>
+        `;
+    };
 
-            let kickoffTime = '00:00';
-            if (g.kickoff) {
-                const timeMatch = String(g.kickoff).match(/\d{1,2}:\d{2}/);
-                kickoffTime = timeMatch ? timeMatch[0] : String(g.kickoff);
-            }
+    let kickoffTime = '00:00';
+    if (g.kickoff) {
+        const timeMatch = String(g.kickoff).match(/\d{1,2}:\d{2}/);
+        kickoffTime = timeMatch ? timeMatch[0] : String(g.kickoff);
+    }
 
-            let matchDate = '';
-            const d = new Date(g.date || new Date().toISOString());
-            if (!isNaN(d.getTime())) {
-                matchDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' • ';
-            }
+    let matchDate = '';
+    const d = new Date(g.date || new Date().toISOString());
+    if (!isNaN(d.getTime())) {
+        matchDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' • ';
+    }
 
-            // Build logo display if available
-            const homeLogo = g.hidden[0]?.homeLogo || g.familiar[0]?.homeLogo || '';
-            const awayLogo = g.hidden[0]?.awayLogo || g.familiar[0]?.awayLogo || '';
-            const logoHtml = (homeLogo || awayLogo) ? `
-                <div class="team-logos">
-                    ${homeLogo ? `<img src="${homeLogo}" class="team-logo" onerror="this.style.display='none'" alt="">` : ''}
-                    <span class="logo-vs">VS</span>
-                    ${awayLogo ? `<img src="${awayLogo}" class="team-logo" onerror="this.style.display='none'" alt="">` : ''}
-                </div>` : '';
+    const homeLogo = g.hidden[0]?.homeLogo || g.familiar[0]?.homeLogo || '';
+    const awayLogo = g.hidden[0]?.awayLogo || g.familiar[0]?.awayLogo || '';
+    const logoHtml = (homeLogo || awayLogo) ? `
+        <div class="team-logos">
+            ${homeLogo ? `<img src="${homeLogo}" class="team-logo" onerror="this.style.display='none'" alt="">` : ''}
+            <span class="logo-vs">VS</span>
+            ${awayLogo ? `<img src="${awayLogo}" class="team-logo" onerror="this.style.display='none'" alt="">` : ''}
+        </div>` : '';
 
-            return `
-                <div class="result-card">
-                    <div class="match-header">
-                        ${logoHtml}
-                        <div class="match-title">${g.match}</div>
-                        <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">${g.competition} • ${matchDate}${kickoffTime}</div>
-                    </div>
-                    ${renderMarkets(g.hidden, 'Hidden Markets', '🎯')}
-                    ${renderMarkets(g.familiar, 'Familiar Markets', '📌')}
-                </div>
-            `;
-        }
+    return `
+        <div class="result-card">
+            <div class="match-header">
+                ${logoHtml}
+                <div class="match-title">${g.match}</div>
+                <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">${g.competition} • ${matchDate}${kickoffTime}</div>
+            </div>
+            ${renderMarkets(g.hidden, 'Hidden Markets', '🎯')}
+            ${renderMarkets(g.familiar, 'Familiar Markets', '📌')}
+        </div>
+    `;
+}
         async function handleLogin(e) {
             e.preventDefault();
             const email   = document.getElementById('loginEmail').value.toLowerCase().trim();
@@ -871,40 +888,73 @@
         }
 
         async function loadTodayPredictions() {
-            const section = document.getElementById('todayPredictions');
-            const grid    = document.getElementById('todayGrid');
-            if (section) section.style.display = 'block';
-            if (grid)    grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#64748b;">Loading predictions...</div>';
-            try {
-                const res  = await fetch(APPS_SCRIPT + '?action=unlockPicks&email=' + encodeURIComponent(loggedInUser.email));
-                const data = await res.json();
-                if (data.status === 'success' && data.data && data.data.length > 0) {
-                    const today        = new Date().toISOString();
-                    const picksWithDate= data.data.map(r => ({ ...r, date: r.date || today }));
-                    // Merge into allResults without duplicates
-                    picksWithDate.forEach(p => {
-                        if (!allResults.some(r => r.match === p.match && r.marketType === p.marketType)) {
-                            allResults.push(p);
-                        }
-                    });
-                    const groups = groupMatches(picksWithDate);
-                    if (grid) grid.innerHTML = Object.values(groups).map(g => createMatchCard(g)).join('');
-                    // Green badge = predictions loaded
-                    const badge = document.getElementById('liveBadge');
-                    if (badge) { badge.style.background='#dcfce7'; badge.style.color='#166534'; badge.innerHTML='<span style="width:8px;height:8px;background:#16a34a;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;"></span> LIVE TODAY'; }
-                } else if (data.status === 'success') {
-                    if (grid) grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#64748b;">No predictions available for today yet.</div>';
-                    // Amber badge = no predictions yet
-                    const badge = document.getElementById('liveBadge');
-                    if (badge) { badge.style.background='#fef9c3'; badge.style.color='#854d0e'; badge.innerHTML='<span style="width:8px;height:8px;background:#ca8a04;border-radius:50%;display:inline-block;"></span> PENDING'; }
-                } else {
-                    if (grid) grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#ef4444;">Could not load predictions. Try refreshing.</div>';
+    const section = document.getElementById('todayPredictions');
+    const grid    = document.getElementById('todayGrid');
+    if (section) section.style.display = 'block';
+    if (grid)    grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#64748b;">Loading predictions...</div>';
+    try {
+        const res  = await fetch(APPS_SCRIPT + '?action=unlockPicks&email=' + encodeURIComponent(loggedInUser.email));
+        const data = await res.json();
+        if (data.status === 'success' && data.data && data.data.length > 0) {
+            const today        = new Date().toISOString();
+            
+            // ═══ FIX: Transform API response to flat structure with WHY data ═══
+            const picksWithDate = data.data.map(pick => ({
+                date: pick.date || today,
+                match: pick.match,
+                competition: pick.competition,
+                kickoff: pick.kickoff,
+                marketType: pick.marketType,
+                
+                // Flatten hidden markets
+                market1: pick.market1,
+                conf1: pick.conf1,
+                why1: pick.why1,  // ← WHY is here
+                
+                market2: pick.market2,
+                conf2: pick.conf2,
+                why2: pick.why2,  // ← WHY is here
+                
+                market3: pick.market3,
+                conf3: pick.conf3,
+                why3: pick.why3,  // ← WHY is here
+                
+                // Store raw object for later access
+                _raw: pick
+            }));
+            
+            // Merge into allResults without duplicates
+            picksWithDate.forEach(p => {
+                if (!allResults.some(r => r.match === p.match && r.marketType === p.marketType)) {
+                    allResults.push(p);
                 }
-            } catch (e) {
-                console.error('loadTodayPredictions error:', e);
-                if (grid) grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#ef4444;">Network error. Please refresh.</div>';
+            });
+            
+            const groups = groupMatches(picksWithDate);
+            if (grid) grid.innerHTML = Object.values(groups).map(g => createMatchCard(g)).join('');
+            
+            const badge = document.getElementById('liveBadge');
+            if (badge) { 
+                badge.style.background='#dcfce7'; 
+                badge.style.color='#166534'; 
+                badge.innerHTML='<span style="width:8px;height:8px;background:#16a34a;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;"></span> LIVE TODAY'; 
             }
+        } else if (data.status === 'success') {
+            if (grid) grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#64748b;">No predictions available for today yet.</div>';
+            const badge = document.getElementById('liveBadge');
+            if (badge) { 
+                badge.style.background='#fef9c3'; 
+                badge.style.color='#854d0e'; 
+                badge.innerHTML='<span style="width:8px;height:8px;background:#ca8a04;border-radius:50%;display:inline-block;"></span> PENDING'; 
+            }
+        } else {
+            if (grid) grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#ef4444;">Could not load predictions. Try refreshing.</div>';
+        }
+    } catch (e) {
+        console.error('loadTodayPredictions error:', e);
+        if (grid) grid.innerHTML = '<div style="text-align:center;padding:2rem;color:#ef4444;">Network error. Please refresh.</div>';
     }
+        }
         function makePayment() {
             if (!loggedInUser) { alert("Please login or signup first."); scrollToSignup(); return; }
             FlutterwaveCheckout({
@@ -945,55 +995,64 @@
         function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
         
         function openAnalysis(matchName, marketType, marketIndex, rowData) {
-            const modal   = document.getElementById('analysisModal');
-            const content = document.getElementById('analysisContent');
+    const modal   = document.getElementById('analysisModal');
+    const content = document.getElementById('analysisContent');
 
-            // Use passed rowData if available, else search allResults (for results page)
-            const row = rowData || allResults.find(r => r.match === matchName && r.marketType === marketType);
-            if (!row) { console.warn('openAnalysis: row not found for', matchName, marketType); return; }
+    const row = rowData || allResults.find(r => r.match === matchName && r.marketType === marketType);
+    if (!row) { 
+        console.warn('openAnalysis: row not found for', matchName, marketType); 
+        return; 
+    }
 
-            const market = row[`market${marketIndex}`];
-            const conf   = row[`conf${marketIndex}`];
+    const market = row[`market${marketIndex}`];
+    const conf   = row[`conf${marketIndex}`];
+    
+    // ═══ FIX: Get WHY from the correct field ═══
+    const whyText = row[`why${marketIndex}`] || '';
+    const hasWhy  = whyText && whyText.toString().trim().length > 0;
 
-            // ── Use your actual why descriptions from Sheets ──────
-            // Falls back to generic text only if the column is empty
-            const whyText = row[`why${marketIndex}`] || '';
-            const hasWhy  = whyText && whyText.toString().trim().length > 0;
+    const analysis = hasWhy
+      ? whyText
+      : "AI pattern analysis based on team form, historical data, and statistical modeling.";
 
-            const analysis = hasWhy
-              ? whyText
-              : "AI analysis based on historical patterns, team form, and statistical modeling for this market.";
+    const safeDate = (() => { 
+        try { 
+            return new Date(row.date || new Date().toISOString()).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }); 
+        } catch(e) { 
+            return ''; 
+        } 
+    })();
+    
+    content.innerHTML = `
+        <div style="margin-bottom: 2rem;">
+            <div style="background: var(--primary); color: white; display: inline-block; padding: 0.3rem 0.8rem; border-radius: 8px; font-size: 0.7rem; font-weight: 800; margin-bottom: 1rem;">${row.competition || 'Football'}</div>
+            <h2 style="text-align: left; margin-bottom: 0.5rem; font-size: 1.8rem; color: #0f172a;">${row.match || ''}</h2>
+            <p style="color: var(--text-muted); font-weight: 600;">${safeDate}${row.kickoff ? ' • ' + row.kickoff : ''}</p>
+        </div>
 
-            const safeDate = (() => { try { return new Date(row.date || new Date().toISOString()).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }); } catch(e) { return ''; } })();
-            content.innerHTML = `
-                <div style="margin-bottom: 2rem;">
-                    <div style="background: var(--primary); color: white; display: inline-block; padding: 0.3rem 0.8rem; border-radius: 8px; font-size: 0.7rem; font-weight: 800; margin-bottom: 1rem;">${row.competition || 'Football'}</div>
-                    <h2 style="text-align: left; margin-bottom: 0.5rem; font-size: 1.8rem; color: #0f172a;">${row.match || ''}</h2>
-                    <p style="color: var(--text-muted); font-weight: 600;">${safeDate}${row.kickoff ? ' • ' + row.kickoff : ''}</p>
-                </div>
+        <div style="background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 1px solid #f1f5f9; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Selected Market</h3>
+                <span style="font-weight: 800; color: var(--primary); font-size: 1.2rem;">${conf}% Confidence</span>
+            </div>
+            <p style="font-size: 1.3rem; font-weight: 800; color: #0f172a;">${market}</p>
+        </div>
 
-                <div style="background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 1px solid #f1f5f9; margin-bottom: 2rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h3 style="font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Selected Market</h3>
-                        <span style="font-weight: 800; color: var(--primary); font-size: 1.2rem;">${conf}% Confidence</span>
-                    </div>
-                    <p style="font-size: 1.3rem; font-weight: 800; color: #0f172a;">${market}</p>
-                </div>
+        <div style="display: grid; gap: 1.5rem;">
+            <div style="background: white; border-radius: 16px; padding: 1.2rem;">
+                <h4 style="display: flex; align-items: center; gap: 0.5rem; color: #0f172a; margin-bottom: 0.7rem; font-size: 1.1rem;">🔍 Why This Market</h4>
+                <p style="font-size: 1rem; line-height: 1.7; color: #475569;">${analysis}</p>
+            </div>
+        </div>
 
-                <div style="display: grid; gap: 1.5rem;">
-                    <div style="background: white; border-radius: 16px; padding: 1.2rem;">
-                        <h4 style="display: flex; align-items: center; gap: 0.5rem; color: #0f172a; margin-bottom: 0.7rem; font-size: 1.1rem;">&#128269; Why This Market</h4>
-                        <p style="font-size: 1rem; line-height: 1.7; color: #475569;">${analysis}</p>
-                    </div>
-                </div>
-
-                <div style="margin-top: 2.5rem;">
-                    <button onclick="closeAnalysis()" class="btn" style="width: 100%;">Close Analysis</button>
-                </div>
-            `;
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
+        <div style="margin-top: 2.5rem;">
+            <button onclick="closeAnalysis()" class="btn" style="width: 100%;">Close Analysis</button>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
 
         function closeAnalysis() {
             document.getElementById('analysisModal').style.display = 'none';
