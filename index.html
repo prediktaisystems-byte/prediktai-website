@@ -920,17 +920,17 @@ function renderResultMarkets(markets, type, id) {
 }
 
 async function loadTodayPredictions() {
-  if (!loggedInUser) return;
-  try {
-    var res = await fetch(APPS_SCRIPT + '?action=unlockPicks&email=' + encodeURIComponent(loggedInUser.email));
-    var data = await res.json();
-    if (data.status==='success' && data.data && data.data.length>0) {
-      renderPredictions(data.data);
-    } else {
-      document.getElementById('predictionsContainer').innerHTML = mkEmpty('mail','No predictions for today',"Our analysts haven't published picks yet. Check back soon.");
-    }
-  } catch(e) {
-    document.getElementById('predictionsContainer').innerHTML = mkEmpty('mail','No predictions for today',"Our analysts haven't published picks yet. Check back soon.");
+  const token = localStorage.getItem('prediktUserToken') || '';
+  const url   = APPS_SCRIPT + '?action=getPicks' + (token ? '&token=' + encodeURIComponent(token) : '');
+  const res   = await fetch(url);
+  const data  = await res.json();
+
+  if (data.access === 'limited') {
+    // Show the one preview match + a locked CTA
+    renderPreviewPicks(data.matches, data.total);
+  } else {
+    // Show all picks normally
+    renderPredictions(data.matches);
   }
 }
 
@@ -1114,7 +1114,9 @@ function updateProfileInfo() {
 
 function logout() {
   localStorage.removeItem('prediktUser');
+  localStorage.removeItem('prediktUserName');
   localStorage.removeItem('prediktUserExpiry');
+  localStorage.removeItem('prediktUserToken'); // ← clear token
   location.reload();
 }
 
@@ -1138,6 +1140,7 @@ async function handleLogin(e) {
       loggedInUser = { email: email, planType: data.type || 'Trial' };
       localStorage.setItem('prediktUser',      JSON.stringify(loggedInUser));
       localStorage.setItem('prediktUserName',  data.name  || '');
+      localStorage.setItem('prediktUserToken',  data.token || ''); // ← store token
       if (data.expiry) localStorage.setItem('prediktUserExpiry', data.expiry);
       closeLogin();
       location.reload();
