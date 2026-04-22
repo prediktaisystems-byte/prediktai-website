@@ -1030,107 +1030,220 @@ function logout() {
   location.reload();
 }
 
-// NOTE: Update Apps Script checkMember to return name & expiry:
-// return jsonResponse(user ? {valid:true,name:user[0],type:user[3],status:user[6],expiry:user[5]} : {valid:false});
+// ── LOGIN ─────────────────────────────────────────────────────────
 async function handleLogin(e) {
   e.preventDefault();
-  var email = document.getElementById('loginEmail').value.toLowerCase().trim();
-  var phone = document.getElementById('loginPhone').value.trim();
-  var errEl = document.getElementById('loginError');
+  var email    = document.getElementById('loginEmail').value.toLowerCase().trim();
+  var password = document.getElementById('loginPassword').value.trim();
+  var errEl    = document.getElementById('loginError');
   errEl.style.display = 'none';
+
+  var btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Logging in\u2026';
+
   try {
-    var res  = await fetch(APPS_SCRIPT+'?action=checkMember&email='+encodeURIComponent(email)+'&phone='+encodeURIComponent(phone));
+    var res  = await fetch(APPS_SCRIPT + '?action=checkMember&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password));
     var data = await res.json();
+
     if (data.valid) {
-      if (data.name) {
-        localStorage.setItem('prediktUserName', data.name);
-      } else {
-        var prev = {};
-        try { prev = JSON.parse(localStorage.getItem('prediktUser')||'{}'); } catch(ex) {}
-        if (prev.email && prev.email !== email) localStorage.removeItem('prediktUserName');
-      }
+      // Store everything the app needs about this user
+      loggedInUser = { email: email, planType: data.type || 'Trial' };
+      localStorage.setItem('prediktUser',      JSON.stringify(loggedInUser));
+      localStorage.setItem('prediktUserName',  data.name  || '');
       if (data.expiry) localStorage.setItem('prediktUserExpiry', data.expiry);
-      loggedInUser = { email:email, phone:phone, planType:data.type||'Trial' };
-      localStorage.setItem('prediktUser', JSON.stringify(loggedInUser));
       closeLogin();
       location.reload();
     } else {
       errEl.style.display = 'block';
-      errEl.textContent = 'Account not found. Check your email and phone.';
+      errEl.textContent   = data.message || 'Incorrect email or password.';
+      btn.disabled = false; btn.textContent = 'Login';
     }
   } catch(err) {
     errEl.style.display = 'block';
-    errEl.textContent = 'Connection error. Please try again.';
+    errEl.textContent   = 'Connection error. Please try again.';
+    btn.disabled = false; btn.textContent = 'Login';
   }
 }
 
 async function handleSignup(e) {
   e.preventDefault();
-  var name=document.getElementById('signupName').value.trim();
-  var email=document.getElementById('signupEmail').value.trim();
-  var phone=document.getElementById('signupPhone').value.trim();
-  var btn=e.target.querySelector('button[type="submit"]');
-  btn.disabled=true; btn.textContent='Sending\u2026';
+  var name     = document.getElementById('signupName').value.trim();
+  var email    = document.getElementById('signupEmail').value.trim();
+  var password = document.getElementById('signupPassword').value.trim();
+  var confirm  = document.getElementById('signupPasswordConfirm').value.trim();
+
+  if (password !== confirm) {
+    showSignupMsg('Passwords do not match.', 'error'); return;
+  }
+  if (password.length < 6) {
+    showSignupMsg('Password must be at least 6 characters.', 'error'); return;
+  }
+
+  var btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Sending\u2026';
+
   try {
-    var res=await fetch(APPS_SCRIPT+'?action=sendOTP&name='+encodeURIComponent(name)+'&email='+encodeURIComponent(email)+'&phone='+encodeURIComponent(phone));
-    var data=await res.json();
+    var res  = await fetch(APPS_SCRIPT + '?action=sendOTP&name=' + encodeURIComponent(name) + '&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password));
+    var data = await res.json();
+
     if (data.success) {
-      _otpPending={name:name,email:email,phone:phone};
-      localStorage.setItem('prediktUserName', name);
-      document.getElementById('signupStep1').style.display='none';
-      document.getElementById('signupStep2').style.display='block';
-      document.getElementById('otpEmailDisplay').textContent=email;
-    } else if (data.message==='already_registered') {
-      showSignupMsg('Email already registered. Please login.','info');
-      btn.disabled=false; btn.textContent='Activate Trial';
+      _otpPending = { name: name, email: email, password: password };
+      localStorage.setItem('prediktUserName', name); // store early for welcome badge
+      document.getElementById('signupStep1').style.display = 'none';
+      document.getElementById('signupStep2').style.display = 'block';
+      document.getElementById('otpEmailDisplay').textContent = email;
+    } else if (data.message === 'already_registered') {
+      showSignupMsg('Email already registered. Please log in.', 'info');
+      btn.disabled = false; btn.textContent = 'Activate Trial';
     } else {
-      showSignupMsg('Error sending code. Please try again.','error');
-      btn.disabled=false; btn.textContent='Activate Trial';
+      showSignupMsg(data.message || 'Error sending code. Try again.', 'error');
+      btn.disabled = false; btn.textContent = 'Activate Trial';
     }
   } catch(err) {
-    showSignupMsg('Network error. Please try again.','error');
-    btn.disabled=false; btn.textContent='Activate Trial';
+    showSignupMsg('Network error. Please try again.', 'error');
+    btn.disabled = false; btn.textContent = 'Activate Trial';
   }
 }
 
+// ── SIGNUP STEP 2: Verify OTP ─────────────────────────────────────
 async function handleOTPVerify(e) {
   e.preventDefault();
-  var otp=document.getElementById('otpInput').value.trim();
-  var btn=e.target.querySelector('button[type="submit"]');
-  if (otp.length!==6) { showSignupMsg('Enter 6-digit code','error'); return; }
-  btn.disabled=true; btn.textContent='Verifying\u2026';
+  var otp = document.getElementById('otpInput').value.trim();
+  if (otp.length !== 6) { showSignupMsg('Enter the 6-digit code.', 'error'); return; }
+
+  var btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Verifying\u2026';
+
   try {
-    var res=await fetch(APPS_SCRIPT+'?action=verifyOTP&email='+encodeURIComponent(_otpPending.email)+'&otp='+encodeURIComponent(otp));
-    var data=await res.json();
+    var res  = await fetch(APPS_SCRIPT + '?action=verifyOTP&email=' + encodeURIComponent(_otpPending.email) + '&otp=' + encodeURIComponent(otp));
+    var data = await res.json();
+
     if (data.success) {
-      loggedInUser={email:_otpPending.email,phone:_otpPending.phone,planType:'Trial'};
-      localStorage.setItem('prediktUser',JSON.stringify(loggedInUser));
-      localStorage.setItem('prediktUserName',_otpPending.name);
-      var exp=new Date(); exp.setDate(exp.getDate()+7);
-      localStorage.setItem('prediktUserExpiry',exp.toISOString());
-      closeSignup(); location.reload();
+      loggedInUser = { email: _otpPending.email, planType: 'Trial' };
+      localStorage.setItem('prediktUser',     JSON.stringify(loggedInUser));
+      localStorage.setItem('prediktUserName', _otpPending.name);
+      var exp = new Date(); exp.setDate(exp.getDate() + 7);
+      localStorage.setItem('prediktUserExpiry', exp.toISOString());
+      closeSignup();
+      location.reload();
     } else {
-      showSignupMsg(data.message||'Verification failed. Try again.','error');
-      btn.disabled=false; btn.textContent='Verify & Activate';
+      // Show error in step-2 msg element
+      var msgEl = document.getElementById('signupMsg2');
+      if (msgEl) { msgEl.style.display='block'; msgEl.style.background='rgba(239,68,68,.15)'; msgEl.style.color='#fca5a5'; msgEl.textContent = data.message || 'Verification failed.'; }
+      btn.disabled = false; btn.textContent = 'Verify & Activate';
     }
   } catch(err) {
-    showSignupMsg('Network error.','error');
-    btn.disabled=false; btn.textContent='Verify & Activate';
+    showSignupMsg('Network error.', 'error');
+    btn.disabled = false; btn.textContent = 'Verify & Activate';
+  }
+}
+ 
+// ── SIGNUP: Resend OTP ────────────────────────────────────────────
+async function resendOTP() {
+  try {
+    await fetch(APPS_SCRIPT + '?action=sendOTP&name=' + encodeURIComponent(_otpPending.name) + '&email=' + encodeURIComponent(_otpPending.email) + '&password=' + encodeURIComponent(_otpPending.password));
+    showSignupMsg('Code resent! Check your email.', 'success');
+  } catch(e) {
+    showSignupMsg('Error. Try again.', 'error');
   }
 }
 
-async function resendOTP() {
+// ── PASSWORD RESET STEP 1 ─────────────────────────────────────────
+var _resetEmail = '';
+async function handleSendResetOTP(e) {
+  e.preventDefault();
+  var email = document.getElementById('resetEmail').value.toLowerCase().trim();
+  var btn   = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Sending\u2026';
+
   try {
-    await fetch(APPS_SCRIPT+'?action=sendOTP&name='+encodeURIComponent(_otpPending.name)+'&email='+encodeURIComponent(_otpPending.email)+'&phone='+encodeURIComponent(_otpPending.phone));
-    showSignupMsg('Code resent! Check your email.','success');
-  } catch(e) { showSignupMsg('Error. Try again.','error'); }
+    var res  = await fetch(APPS_SCRIPT + '?action=sendResetOTP&email=' + encodeURIComponent(email));
+    var data = await res.json();
+    // Always advance — generic message prevents email enumeration
+    _resetEmail = email;
+    document.getElementById('resetStep1').style.display = 'none';
+    document.getElementById('resetStep2').style.display = 'block';
+    document.getElementById('resetEmailDisplay').textContent = email;
+  } catch(err) {
+    showResetMsg('resetMsg', 'Network error. Try again.', 'error');
+    btn.disabled = false; btn.textContent = 'Send Reset Code';
+  }
 }
 
-function showSignupMsg(text, type) {
-  var el=document.getElementById('signupMsg');
-  var c={success:{bg:'rgba(34,197,94,.15)',color:'#22c55e'},error:{bg:'rgba(239,68,68,.15)',color:'#fca5a5'},info:{bg:'rgba(56,189,248,.15)',color:'#38bdf8'}};
-  var s=c[type]||c.info;
-  el.style.display='block'; el.style.background=s.bg; el.style.color=s.color; el.textContent=text;
+// ── PASSWORD RESET STEP 2 ─────────────────────────────────────────
+var _resetToken = '';
+async function handleVerifyResetOTP(e) {
+  e.preventDefault();
+  var otp = document.getElementById('resetOTPInput').value.trim();
+  if (otp.length !== 6) { showResetMsg('resetMsg2', 'Enter the 6-digit code.', 'error'); return; }
+
+  var btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Verifying\u2026';
+
+  try {
+    var res  = await fetch(APPS_SCRIPT + '?action=verifyResetOTP&email=' + encodeURIComponent(_resetEmail) + '&otp=' + encodeURIComponent(otp));
+    var data = await res.json();
+
+    if (data.success && data.resetToken) {
+      _resetToken = data.resetToken;
+      document.getElementById('resetStep2').style.display = 'none';
+      document.getElementById('resetStep3').style.display = 'block';
+    } else {
+      showResetMsg('resetMsg2', data.message || 'Incorrect code.', 'error');
+      btn.disabled = false; btn.textContent = 'Verify Code';
+    }
+  } catch(err) {
+    showResetMsg('resetMsg2', 'Network error. Try again.', 'error');
+    btn.disabled = false; btn.textContent = 'Verify Code';
+  }
+}
+
+// ── PASSWORD RESET STEP 3 ─────────────────────────────────────────
+async function handleUpdatePassword(e) {
+  e.preventDefault();
+  var newPwd     = document.getElementById('newPassword').value.trim();
+  var confirmPwd = document.getElementById('newPasswordConfirm').value.trim();
+
+  if (newPwd !== confirmPwd) { showResetMsg('resetMsg3', 'Passwords do not match.', 'error'); return; }
+  if (newPwd.length < 6)    { showResetMsg('resetMsg3', 'Password must be at least 6 characters.', 'error'); return; }
+
+  var btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.textContent = 'Updating\u2026';
+
+  try {
+    var res  = await fetch(APPS_SCRIPT + '?action=updatePassword&email=' + encodeURIComponent(_resetEmail) + '&resetToken=' + encodeURIComponent(_resetToken) + '&password=' + encodeURIComponent(newPwd));
+    var data = await res.json();
+
+    if (data.success) {
+      showResetMsg('resetMsg3', 'Password updated! You can now log in.', 'success');
+      // Reset the modal state and close after 2s
+      setTimeout(function() {
+        closeModal('resetModal');
+        // Reset all steps for next time
+        document.getElementById('resetStep1').style.display = 'block';
+        document.getElementById('resetStep2').style.display = 'none';
+        document.getElementById('resetStep3').style.display = 'none';
+        document.getElementById('resetEmail').value = '';
+        document.getElementById('resetOTPInput').value = '';
+        openLogin();
+      }, 2000);
+    } else {
+      showResetMsg('resetMsg3', data.message || 'Update failed.', 'error');
+      btn.disabled = false; btn.textContent = 'Update Password';
+    }
+  } catch(err) {
+    showResetMsg('resetMsg3', 'Network error. Try again.', 'error');
+    btn.disabled = false; btn.textContent = 'Update Password';
+  }
+}
+
+// ── Helper: show message in reset modal steps ─────────────────────
+function showResetMsg(elId, text, type) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  var c = { success: { bg:'rgba(34,197,94,.15)', color:'#22c55e' }, error: { bg:'rgba(239,68,68,.15)', color:'#fca5a5' }, info: { bg:'rgba(56,189,248,.15)', color:'#38bdf8' } };
+  var s = c[type] || c.info;
+  el.style.display = 'block'; el.style.background = s.bg; el.style.color = s.color; el.textContent = text;
 }
 
 function openLogin()   { openModal('loginModal'); }
