@@ -919,80 +919,92 @@ function renderResultMarkets(markets, type, id) {
   return html.join('');
 }
 
-  async function loadTodayPredictions() {
+// ── LOAD TODAY'S PREDICTIONS (unified — visitors + members) ──────
+// Replaces your existing loadTodayPredictions function entirely.
+// Uses getPicks as the single endpoint. No more unlockPicks for page load.
+async function loadTodayPredictions() {
+  const container = document.getElementById('predictionsContainer');
+
+  // ── Safely read user from localStorage ───────────────────────
+  // CRITICAL: always guard this — user is null for visitors.
+  let loggedInUser = null;
   try {
-    // ── Build API URL based on login status ────────────────────────
-    // Logged-in: ?action=getPicks&email=user@example.com
-    // Visitor:   ?action=getPicks
-    const url = loggedInUser 
-      ? APPS_SCRIPT + '?action=getPicks&email=' + encodeURIComponent(loggedInUser.email)
-      : APPS_SCRIPT + '?action=getPicks';
-
-    console.log('📊 Fetching predictions from:', url.split('?')[0]);
-
-    var res = await fetch(url, { cache: 'no-store' });
-    var data = await res.json();
-
-    console.log('📊 API Response:', data);
-
-    // ── Check if response has valid structure ──────────────────────
-    if (!data || !data.access) {
-      console.error('❌ Invalid response structure:', data);
-      document.getElementById('predictionsContainer').innerHTML = mkEmpty('mail', 'No predictions for today',
-        "Our analysts haven't published picks yet. Check back soon.");
-      return;
-    }
-
-    // ── Data exists and user has access ────────────────────────────
-    if (data.matches && data.matches.length > 0) {
-      console.log(`✅ Found ${data.matches.length} matches (access: ${data.access})`);
-      renderPredictions(data.matches);
-      return;
-    }
-
-    // ── No matches at all ──────────────────────────────────────────
-    if (data.total === 0) {
-      console.log('⚠️  No matches published yet');
-      document.getElementById('predictionsContainer').innerHTML = mkEmpty('mail', 'No predictions for today',
-        "Our analysts haven't published picks yet. Check back soon.");
-      return;
-    }
-
-    // ── Visitor with locked matches ────────────────────────────────
-    if (data.locked && data.total > 0) {
-      console.log(`⚠️  Visitor viewing: ${data.total} total picks, ${data.matches.length} preview visible`);
-      renderPredictions(data.matches);
-      
-      // Show unlock prompt below preview
-      const container = document.getElementById('predictionsContainer');
-      const msg = document.createElement('div');
-      msg.style.cssText = 'text-align:center;padding:2rem;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:12px;margin-top:2rem;';
-      msg.innerHTML = `
-        <div style="font-size:0.95rem;font-weight:600;color:#38bdf8;margin-bottom:0.8rem;">
-          🔒 ${data.total - data.matches.length} More Predictions Locked
-        </div>
-        <div style="font-size:0.85rem;color:#9ca3af;margin-bottom:1.2rem;">
-          Sign up to unlock all ${data.total} predictions + full analysis
-        </div>
-        <button onclick="showAuth('signup')" style="padding:0.6rem 1.4rem;background:#2563eb;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.9rem;">
-          Sign Up Free
-        </button>
-      `;
-      container.parentNode.insertBefore(msg, container.nextSibling);
-      return;
-    }
-
-    // ── Fallback (shouldn't reach here) ────────────────────────────
-    console.error('❌ Unexpected response state:', data);
-    document.getElementById('predictionsContainer').innerHTML = mkEmpty('mail', 'No predictions for today',
-      "Our analysts haven't published picks yet. Check back soon.");
-
+    const stored = localStorage.getItem('prediktUser');
+    if (stored) loggedInUser = JSON.parse(stored);
   } catch(e) {
-    console.error('❌ loadTodayPredictions error:', e);
-    document.getElementById('predictionsContainer').innerHTML = mkEmpty('mail', 'No predictions for today',
-      "Our analysts haven't published picks yet. Check back soon.");
+    loggedInUser = null; // malformed JSON — treat as visitor
+  }
+
+  // ── Build request URL ─────────────────────────────────────────
+  // Pass email only when we actually have a logged-in user.
+  // Never access user.email without confirming user is not null first.
+  const email = (loggedInUser && loggedInUser.email) ? loggedInUser.email : '';
+  const url   = APPS_SCRIPT + '?action=getPicks' + (email ? '&email=' + encodeURIComponent(email) : '');
+
+  try {
+    const res  = await fetch(url, { cache: 'no-store' });
+    const data = await res.json();
+
+    if (data.access === 'full') {
+      // ── Logged-in member: render all picks ──────────────────
+      if (!data.matches || data.matches.length === 0) {
+        container.innerHTML = emptyState('mail', "No predictions for today", "Our analysts haven't published picks yet. Check back soon.");
+        return;
+      }
+      renderPredictions(data.matches);
+
+    } else if (data.access === 'limited') {
+      // ── Visitor: render 1 preview match + locked CTA ────────
+      if (!data.matches || data.matches.length === 0) {
+        container.innerHTML = emptyState('mail', "No predictions for today", "Our analysts haven't published picks yet. Check back soon.");
+        return;
+      }
+      renderVisitorPreview(data.matches, data.total || 0);
+
+    } else {
+      // ── Unexpected response shape — show empty state ─────────
+      container.innerHTML = emptyState('mail', "No predictions for today", "Our analysts haven't published picks yet. Check back soon.");
+    }
+
+  } catch(err) {
+    console.error('loadTodayPredictions error:', err);
+    container.innerHTML = emptyState('mail', "Could not load predictions", "Please check your connection and try again.");
   }
 }
+
+// ── RENDER VISITOR PREVIEW ────────────────────────────────────────
+// Shows the 1 preview match the backend returned, plus a signup CTA
+// that tells the visitor how many more picks are locked.
+function renderVisitorPreview(matches, totalMatches) {
+  const container = document.getElementById('predictionsContainer');
+  const lockedCount = Math.max(0, totalMatches - 1);
+
+  // Render the one preview match the same way as full picks,
+  // but conf/why fields will be empty — the card still shows match + market name.
+  renderPredictions(matches);
+
+  // Append a locked CTA below the preview card
+  const cta = document.createElement('div');
+  cta.className = 'match-card';
+  cta.style.cssText = 'text-align:center;padding:1.8rem 1.4rem;border:1px dashed rgba(56,189,248,0.3);';
+  cta.innerHTML = [
+    '<div style="font-size:1.6rem;margin-bottom:0.55rem;">🔒</div>',
+    '<div style="font-weight:800;font-size:0.96rem;color:#ffffff;margin-bottom:0.35rem;">',
+      lockedCount > 0 ? lockedCount + ' More Pick' + (lockedCount !== 1 ? 's' : '') + ' Locked' : 'Full Analysis Locked',
+    '</div>',
+    '<div style="color:#9ca3af;font-size:0.8rem;margin-bottom:1.1rem;line-height:1.55;">',
+      'Sign up free to unlock all of today\'s picks with full confidence scores and AI reasoning.',
+    '</div>',
+    '<button class="btn btn-primary" onclick="openSignup()" style="margin-right:0.5rem;">',
+      'Start Free Trial',
+    '</button>',
+    '<button class="btn" onclick="openLogin()" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);color:#38bdf8;">',
+      'Login',
+    '</button>'
+  ].join('');
+
+  container.appendChild(cta);
+}  
   
 function renderPredictions(data) {
   var groups = {};
