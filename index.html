@@ -434,7 +434,8 @@ footer{background:var(--bg-card2);border-top:1px solid var(--border);padding:1.4
             <div class="detail-item"><div class="detail-item-label">Plan Type</div><div class="detail-item-value" id="planType">Trial <span class="plan-active-badge">Active</span></div></div>
             <div class="detail-item"><div class="detail-item-label">Expires In</div><div class="detail-item-value" id="expiresIn" style="font-size:0.8rem;">--</div></div>
           </div>
-          <button class="btn btn-primary" style="width:100%;margin-bottom:0.62rem;" id="upgradeBtn" onclick="makePayment()">💎 Upgrade to Premium</button>
+          <button class="btn btn-primary" style="width:100%;margin-bottom:0.62rem;" onclick="makePayment('PREMIUM')">💎 Upgrade to Premium</button>
+          <button class="btn btn-accent" style="width:100%;margin-bottom:0.62rem;margin-top:0.5rem;" onclick="makePayment('PRO')">🥇 Upgrade to Pro Picks</button>
           <div style="text-align:center;font-size:0.67rem;color:var(--text-muted);line-height:1.7;">🔒 Secured by Flutterwave &nbsp;·&nbsp; Cards, Bank Transfer, USSD</div>
         </div>
       </div>
@@ -442,31 +443,54 @@ footer{background:var(--bg-card2);border-top:1px solid var(--border);padding:1.4
   </div>
 
   <!-- PRICING -->
-  <div id="pricingPage" class="page-content">
-    <div class="section-title">Simple Pricing</div>
-    <div style="max-width:500px;margin:0 auto;">
-      <div class="match-card" style="margin-bottom:1.1rem;">
-        <h3 style="margin-bottom:0.33rem;font-size:0.93rem;font-weight:800;">7 Days Free</h3>
-        <p style="color:var(--text-muted);margin-bottom:0.95rem;font-size:0.81rem;">Full access. No payment required.</p>
-        <button class="btn btn-primary" style="width:100%;" onclick="openSignup()">Start Free Trial</button>
-      </div>
-      <div class="match-card" style="border-color:var(--blue-border);">
-        <h3 style="margin-bottom:0.33rem;font-size:0.93rem;font-weight:800;">💎 Premium</h3>
-        <div id="priceDisplay" style="font-size:1.85rem;font-weight:900;color:var(--blue-light);margin:0.65rem 0;letter-spacing:-.04em;">₦3,500</div>
-        <p style="color:var(--text-muted);margin-bottom:1.05rem;font-size:0.75rem;">per month</p>
-        <div style="margin-bottom:1.25rem;">
-          <div class="pricing-feature"><svg class="lci lci-green" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> AI predictions 6–24 matches daily</div>
-          <div class="pricing-feature"><svg class="lci lci-amber" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Value markets — high edge picks</div>
-          <div class="pricing-feature"><svg class="lci" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Main markets — popular options</div>
-          <div class="pricing-feature"><svg class="lci" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Full analysis &amp; reasoning</div>
-          <div class="pricing-feature"><svg class="lci lci-green" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> 7+ leagues coverage</div>
-        </div>
-        <button class="btn btn-accent" style="width:100%;" onclick="makePayment()">Upgrade Now</button>
-        <div class="payment-footer">Secured by Flutterwave<br>Cards, Bank Transfer, USSD<br><strong>Processed under Gideon Sylvester</strong></div>
-      </div>
-    </div>
-  </div>
+<div id="pricingPage" class="page-content">
+  <div class="section-title">Simple Pricing</div>
+  <div style="max-width:500px;margin:0 auto;">
 
+    <!-- Free Trial -->
+    <div class="match-card" style="margin-bottom:1.1rem;">
+      <h3 style="margin-bottom:0.33rem;font-size:0.93rem;font-weight:800;">7 Days Free</h3>
+      <p style="color:var(--text-muted);margin-bottom:0.95rem;font-size:0.81rem;">Full access. No payment required.</p>
+      <button class="btn btn-primary" style="width:100%;" onclick="openSignup()">Start Free Trial</button>
+    </div>
+
+    <!-- Premium Plan -->
+    <div class="match-card" style="border-color:var(--blue-border);margin-bottom:1.1rem;">
+      <h3 style="margin-bottom:0.33rem;font-size:0.93rem;font-weight:800;">💎 Premium</h3>
+      <div id="priceDisplay" style="font-size:1.85rem;font-weight:900;color:var(--blue-light);margin:0.65rem 0;letter-spacing:-.04em;">₦3,500</div>
+      <p style="color:var(--text-muted);margin-bottom:1.05rem;font-size:0.75rem;">per month</p>
+      <div style="margin-bottom:1.25rem;">
+        <div class="pricing-feature"><svg class="lci lci-green" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> AI predictions 6–24 matches daily</div>
+        <div class="pricing-feature"><svg class="lci lci-amber" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Value markets — high edge picks</div>
+        <div class="pricing-feature"><svg class="lci" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Main markets — popular options</div>
+        <div class="pricing-feature"><svg class="lci" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Full analysis &amp; reasoning</div>
+        <div class="pricing-feature"><svg class="lci lci-green" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> 7+ leagues coverage</div>
+        <div class="pricing-feature" style="color:var(--text-muted);font-size:0.75rem;">🕛 Picks live at 12:00 AM Midnight</div>
+      </div>
+      <button class="btn btn-accent" style="width:100%;" onclick="makePayment('PREMIUM')">Get Premium</button>
+      <div class="payment-footer">Secured by Flutterwave<br>Cards, Bank Transfer, USSD<br><strong>Processed under Gideon Sylvester</strong></div>
+    </div>
+
+    <!-- Pro Plan -->
+    <div class="match-card" style="border-color:var(--amber-border);">
+      <h3 style="margin-bottom:0.33rem;font-size:0.93rem;font-weight:800;">🥇 Pro Picks</h3>
+      <div id="priceDisplayPro" style="font-size:1.85rem;font-weight:900;color:var(--amber);margin:0.65rem 0;letter-spacing:-.04em;">₦5,000</div>
+      <p style="color:var(--text-muted);margin-bottom:1.05rem;font-size:0.75rem;">per month</p>
+      <div style="margin-bottom:1.25rem;">
+        <div class="pricing-feature"><svg class="lci lci-green" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 4–6 handpicked matches daily</div>
+        <div class="pricing-feature"><svg class="lci lci-amber" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ONE best pick per match only</div>
+        <div class="pricing-feature"><svg class="lci" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Confidence score per pick</div>
+        <div class="pricing-feature"><svg class="lci" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Learn Why reasoning on every pick</div>
+        <div class="pricing-feature"><svg class="lci lci-green" style="width:15px;height:15px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> No noise — just the best pick</div>
+        <div class="pricing-feature" style="color:var(--text-muted);font-size:0.75rem;">🕛 Picks live at 12:00 PM Noon</div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;background:var(--amber);color:#000;" onclick="makePayment('PRO')">Get Pro Picks</button>
+      <div class="payment-footer">Secured by Flutterwave<br>Cards, Bank Transfer, USSD<br><strong>Processed under Gideon Sylvester</strong></div>
+    </div>
+
+  </div>
+</div>
+ 
   <!-- ABOUT -->
   <div id="aboutPage" class="page-content">
     <div class="about-container">
@@ -1492,50 +1516,116 @@ function openAnalysis(match, market, why) {
 }
 function closeAnalysis() { closeModal('analysisModal'); }
 
-function makePayment() {
+function makePayment(plan) {
   if (!loggedInUser) { openLogin(); return; }
+
+  var planKey    = (plan || 'PREMIUM').toUpperCase();
+  var regionData = planKey === 'PRO' ? _payRegion.pro : _payRegion.premium;
+  var planDesc   = planKey === 'PRO'
+    ? 'Pro Picks — Best Pick Per Match Daily'
+    : 'Premium — Full Market Access Daily';
+
   FlutterwaveCheckout({
-    public_key: FLUTTERWAVE_KEY,
-    tx_ref: 'PREDIKT_'+Date.now(),
-    amount: _payRegion.amount, currency: _payRegion.currency,
-    customer: { email:loggedInUser.email, phone_number:loggedInUser.phone, name:localStorage.getItem('prediktUserName')||'Member' },
+    public_key:  FLUTTERWAVE_KEY,
+    tx_ref:      'PREDIKT_' + Date.now() + '_' + planKey,
+    amount:      regionData.amount,
+    currency:    regionData.currency,
+    customer: {
+      email:        loggedInUser.email,
+      phone_number: loggedInUser.phone,
+      name:         localStorage.getItem('prediktUserName') || 'Member'
+    },
+    meta: {
+      plan: planKey
+    },
     callback: function(data) {
-      if (data.status==='successful') {
-        fetch(APPS_SCRIPT+'?action=paymentSuccess&email='+encodeURIComponent(loggedInUser.email));
-        loggedInUser.planType='Paid';
-        localStorage.setItem('prediktUser',JSON.stringify(loggedInUser));
-        var exp=new Date(); exp.setDate(exp.getDate()+30);
-        localStorage.setItem('prediktUserExpiry',exp.toISOString());
-        alert('Payment successful! Your account has been upgraded to Premium.');
+      if (data.status === 'successful') {
+        fetch(APPS_SCRIPT + '?action=paymentSuccess&email=' + encodeURIComponent(loggedInUser.email));
+        loggedInUser.planType = planKey;
+        localStorage.setItem('prediktUser', JSON.stringify(loggedInUser));
+        var exp = new Date(); exp.setDate(exp.getDate() + 30);
+        localStorage.setItem('prediktUserExpiry', exp.toISOString());
+        alert('Payment successful! Your ' + planKey + ' plan is now active.');
         location.reload();
       }
     },
-    customizations: { title:'PREDIKT AI Premium', description:'30 Days Full Access' }
+    customizations: {
+      title:       'PREDIKT AI',
+      description: planDesc
+    }
   });
 }
 
 async function detectRegion() {
   try {
-    var res=await fetch('https://ipapi.co/json/');
-    var data=await res.json();
-    var cc=data.country_code||'NG';
-    var map={
-      NG:{amount:3500,currency:'NGN',display:'\u20a63,500'},GH:{amount:160,currency:'GHS',display:'GH\u20b5160'},
-      KE:{amount:1400,currency:'KES',display:'KES 1,400'},ZA:{amount:210,currency:'ZAR',display:'R210'},
-      UG:{amount:43000,currency:'UGX',display:'UGX 43,000'},TZ:{amount:27500,currency:'TZS',display:'TZS 27,500'},
-      ZM:{amount:220,currency:'ZMW',display:'ZMW 220'},RW:{amount:15500,currency:'RWF',display:'RWF 15,500'},
-      GB:{amount:10,currency:'GBP',display:'\u00a310'},DE:{amount:10,currency:'EUR',display:'\u20ac10'},
-      FR:{amount:10,currency:'EUR',display:'\u20ac10'},ES:{amount:10,currency:'EUR',display:'\u20ac10'},
-      IT:{amount:10,currency:'EUR',display:'\u20ac10'},NL:{amount:10,currency:'EUR',display:'\u20ac10'},
-      BE:{amount:10,currency:'EUR',display:'\u20ac10'},SE:{amount:100,currency:'SEK',display:'SEK 100'},
-      NO:{amount:100,currency:'NOK',display:'NOK 100'},US:{amount:15,currency:'USD',display:'$15'},
-      CA:{amount:20,currency:'CAD',display:'CA$20'}
-    };
-    _payRegion=map[cc]||{amount:10,currency:'USD',display:'$10'};
-    document.getElementById('priceDisplay').innerHTML=_payRegion.display+'<span style="font-size:.82rem;opacity:.55;font-weight:400;">/mo</span>';
-  } catch(e) {}
-}
+    var res  = await fetch('https://ipapi.co/json/');
+    var data = await res.json();
+    var cc   = data.country_code || 'NG';
 
+    // Premium prices per region
+    var premiumMap = {
+      NG: { amount: 3500,  currency: 'NGN', display: '₦3,500'    },
+      GH: { amount: 160,   currency: 'GHS', display: 'GH₵160'    },
+      KE: { amount: 1400,  currency: 'KES', display: 'KES 1,400'  },
+      ZA: { amount: 210,   currency: 'ZAR', display: 'R210'       },
+      UG: { amount: 43000, currency: 'UGX', display: 'UGX 43,000' },
+      TZ: { amount: 27500, currency: 'TZS', display: 'TZS 27,500' },
+      ZM: { amount: 220,   currency: 'ZMW', display: 'ZMW 220'    },
+      RW: { amount: 15500, currency: 'RWF', display: 'RWF 15,500' },
+      GB: { amount: 10,    currency: 'GBP', display: '£10'        },
+      DE: { amount: 10,    currency: 'EUR', display: '€10'        },
+      FR: { amount: 10,    currency: 'EUR', display: '€10'        },
+      ES: { amount: 10,    currency: 'EUR', display: '€10'        },
+      IT: { amount: 10,    currency: 'EUR', display: '€10'        },
+      NL: { amount: 10,    currency: 'EUR', display: '€10'        },
+      BE: { amount: 10,    currency: 'EUR', display: '€10'        },
+      SE: { amount: 100,   currency: 'SEK', display: 'SEK 100'    },
+      NO: { amount: 100,   currency: 'NOK', display: 'NOK 100'    },
+      US: { amount: 15,    currency: 'USD', display: '$15'        },
+      CA: { amount: 20,    currency: 'CAD', display: 'CA$20'      }
+    };
+
+    // Pro prices — Nigeria is fixed at 5000, all others are 2x Premium
+    var premium = premiumMap[cc] || { amount: 10, currency: 'USD', display: '$10' };
+    var proAmount = cc === 'NG' ? 5000 : premium.amount * 2;
+
+    // Build Pro display string using same currency symbol as Premium
+    var currencySymbols = {
+      NGN: '₦', GHS: 'GH₵', KES: 'KES ', ZAR: 'R',
+      UGX: 'UGX ', TZS: 'TZS ', ZMW: 'ZMW ', RWF: 'RWF ',
+      GBP: '£', EUR: '€', SEK: 'SEK ', NOK: 'NOK ',
+      USD: '$', CAD: 'CA$'
+    };
+    var sym        = currencySymbols[premium.currency] || '';
+    var proDisplay = sym + proAmount.toLocaleString();
+
+    // Store both plans globally
+    _payRegion = {
+      premium: { amount: premium.amount, currency: premium.currency, display: premium.display },
+      pro:     { amount: proAmount,      currency: premium.currency, display: proDisplay }
+    };
+
+    // Update price displays if elements exist on the page
+    var premiumEl = document.getElementById('priceDisplay');
+    var proEl     = document.getElementById('priceDisplayPro');
+
+    if (premiumEl) {
+      premiumEl.innerHTML = premium.display +
+        '<span style="font-size:.82rem;opacity:.55;font-weight:400;">/mo</span>';
+    }
+    if (proEl) {
+      proEl.innerHTML = proDisplay +
+        '<span style="font-size:.82rem;opacity:.55;font-weight:400;">/mo</span>';
+    }
+
+  } catch(e) {
+    // Silent fallback — default USD pricing
+    _payRegion = {
+      premium: { amount: 10,  currency: 'USD', display: '$10'  },
+      pro:     { amount: 20,  currency: 'USD', display: '$20'  }
+    };
+  }
+  }
 </script>
 <!-- Flutterwave -->
 <script src="https://checkout.flutterwave.com/v3.js" defer></script>
