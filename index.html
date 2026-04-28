@@ -1426,8 +1426,9 @@ function renderPredictions(data) {
           '<button class="toggle-btn active value-toggle" data-sec="'+phId+'" onclick="switchMarket(this)" type="button">'+starSvg(13)+' Value Markets</button>',
           '<button class="toggle-btn main-toggle" data-sec="'+pfId+'" onclick="switchMarket(this)" type="button">'+chkSvg(13)+' Main Markets</button>',
         '</div>',
-        '<div class="market-section active" id="'+phId+'">'+buildMarketSectionBlurred(hm,'HIDDEN',phId,g.match)+'</div>',
-        '<div class="market-section" id="'+pfId+'">'+buildMarketSectionBlurred(fm,'FAMILIAR',pfId,g.match)+'</div>',
+        '<div class="market-section active" id="'+phId+'">'+(loggedInUser ? buildMarketSection(hm,'HIDDEN',phId,g.match) : buildMarketSectionBlurred(hm,'HIDDEN',phId,g.match))+'</div>',
+        '<div class="market-section" id="'+pfId+'">'+(loggedInUser ? buildMarketSection(fm,'FAMILIAR',pfId,g.match) : buildMarketSectionBlurred(fm,'FAMILIAR',pfId,g.match))+'</div>',
+        
       '</div>'
     );
   });
