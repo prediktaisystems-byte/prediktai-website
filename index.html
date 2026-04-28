@@ -1269,8 +1269,8 @@ function renderProPicks(picks) {
     try {
       var matchName = (pick.match || '').toString().trim();
       var parts = matchName.split(' vs ');
-      var team1 = parts[0] || 'TBD';
-      var team2 = parts[1] || 'TBD';
+      var team1 = parts[0] || '';
+      var team2 = parts[1] || '';
       var league = pick.competition || 'League';
       
       // ✅ SAFE kickoff formatting
