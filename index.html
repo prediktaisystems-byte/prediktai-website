@@ -1267,13 +1267,24 @@ function renderProPicks(picks) {
   
   picks.forEach(function(pick, idx) {
     try {
+      // ── Clean match name ──────────────────────────────────────
       var matchName = (pick.match || '').toString().trim();
+      
+      // Remove trailing " vs TBD" or " vs " with empty team
+      matchName = matchName.replace(' vs TBD', '').trim();
+      matchName = matchName.replace(/\s+vs\s*$/, '').trim();
+      
+      // Split by " vs " to get both teams
       var parts = matchName.split(' vs ');
-      var team1 = parts[0] || '';
-      var team2 = parts[1] || '';
+      
+      // Get team names and clean them
+      var team1 = parts[0] ? parts[0].trim().replace(/\s*-\s*$/, '').trim() : '';
+      var team2 = parts[1] ? parts[1].trim() : '';
+      
+      // Get league and kickoff
       var league = pick.competition || 'League';
       
-      // ✅ SAFE kickoff formatting
+      // ── Format kickoff safely ─────────────────────────────────
       var kickoff = '–:–';
       try {
         if (pick.kickoff) {
@@ -1281,17 +1292,24 @@ function renderProPicks(picks) {
         }
       } catch(e) {
         console.warn('formatKickoff error for pick', idx, ':', e);
-        kickoff = pick.kickoff ? pick.kickoff.toString().substring(0, 5) : '–:–';
+        if (pick.kickoff) {
+          var kickoffStr = pick.kickoff.toString();
+          var timeMatch = kickoffStr.match(/\d{1,2}:\d{2}/);
+          if (timeMatch) {
+            kickoff = timeMatch[0];
+          }
+        }
       }
 
-      console.log('renderProPicks: Pick', idx, '-', matchName, '- Kickoff:', kickoff);
+      console.log('renderProPicks: Pick', idx, '-', team1, (team2 ? 'vs ' + team2 : ''), '- Kickoff:', kickoff);
 
+      // ── Build HTML card ──────────────────────────────────────
       html.push(
         '<div class="pro-match-card">',
           '<div class="pro-match-vs">',
             '<span class="pro-match-team">' + team1 + '</span>',
-            '<span class="pro-match-vs-sep">vs</span>',
-            '<span class="pro-match-team">' + team2 + '</span>',
+            (team2 ? '<span class="pro-match-vs-sep">vs</span>' : ''),
+            (team2 ? '<span class="pro-match-team">' + team2 + '</span>' : ''),
           '</div>',
           '<div class="pro-match-meta">',
             '<span class="pro-competition-badge">' + league + '</span>',
@@ -1306,6 +1324,7 @@ function renderProPicks(picks) {
           '</div>',
         '</div>'
       );
+
     } catch(e) {
       console.error('renderProPicks: Error rendering pick', idx, ':', e);
     }
