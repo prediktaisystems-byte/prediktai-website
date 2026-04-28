@@ -1209,7 +1209,7 @@ async function loadTodayPredictions() {
 async function loadProPicks() {
   try {
     var container = document.getElementById('proPicksContainer');
-    if (!container) return;  // No Pro Picks page on this load
+    if (!container) return;
 
     var email = '';
     try {
@@ -1222,20 +1222,27 @@ async function loadProPicks() {
 
     var url = APPS_SCRIPT + '?action=getVIPPicks' + (email ? '&email=' + encodeURIComponent(email) : '');
     
+    console.log('loadProPicks: Calling API with URL:', url);
+    
     var res = await fetch(url, { cache: 'no-store' });
     var data = await res.json();
 
+    console.log('loadProPicks: API Response:', data);
+
     // Backend returns: { status, data: [...], message }
     if (data && data.status === 'success' && Array.isArray(data.data)) {
+      console.log('loadProPicks: Got ' + data.data.length + ' picks');
       renderProPicks(data.data);
     } else if (data && data.status === 'locked') {
+      console.log('loadProPicks: User locked - VIP access required');
       container.innerHTML = mkEmpty('lock', 'Pro Picks Locked', 'Upgrade to Premium or Pro to unlock daily expert picks.');
     } else {
+      console.log('loadProPicks: No picks or error status:', data && data.status);
       container.innerHTML = mkEmpty('chart', 'No Pro Picks available yet', 'Check back soon for expert-selected picks.');
     }
 
   } catch(err) {
-    console.error('loadProPicks error:', err);
+    console.error('loadProPicks CRITICAL ERROR:', err);
     var container = document.getElementById('proPicksContainer');
     if (container) {
       container.innerHTML = mkEmpty('chart', 'Unable to load Pro Picks', 'Please try again later.');
@@ -1248,43 +1255,71 @@ function renderProPicks(picks) {
   var container = document.getElementById('proPicksContainer');
   if (!container) return;
 
+  console.log('renderProPicks: Starting with', picks.length, 'picks');
+
   if (!picks || picks.length === 0) {
+    console.log('renderProPicks: No picks to render');
     container.innerHTML = mkEmpty('chart', 'No Pro Picks available yet', 'Check back soon for expert-selected picks.');
     return;
   }
 
   var html = [];
+  
   picks.forEach(function(pick, idx) {
-    var matchName = (pick.match || '').toString().trim();
-    var parts = matchName.split(' vs ');
-    var team1 = parts[0] || 'TBD';
-    var team2 = parts[1] || 'TBD';
-    var league = pick.competition || 'League';
-    var kickoff = formatKickoff(pick.kickoff) || '–:–';  // ← FIX: Format time
+    try {
+      var matchName = (pick.match || '').toString().trim();
+      var parts = matchName.split(' vs ');
+      var team1 = parts[0] || 'TBD';
+      var team2 = parts[1] || 'TBD';
+      var league = pick.competition || 'League';
+      
+      // ✅ SAFE kickoff formatting
+      var kickoff = '–:–';
+      try {
+        if (pick.kickoff) {
+          kickoff = formatKickoff(pick.kickoff) || '–:–';
+        }
+      } catch(e) {
+        console.warn('formatKickoff error for pick', idx, ':', e);
+        kickoff = pick.kickoff ? pick.kickoff.toString().substring(0, 5) : '–:–';
+      }
 
-    html.push(
-      '<div class="pro-match-card">',
-        '<div class="pro-match-vs">',
-          '<span class="pro-match-team">' + team1 + '</span>',
-          '<span class="pro-match-vs-sep">vs</span>',
-          '<span class="pro-match-team">' + team2 + '</span>',
-        '</div>',
-        '<div class="pro-match-meta">',
-          '<span class="pro-competition-badge">' + league + '</span>',
-          '<span class="pro-kickoff-badge">',
-            '<svg style="width:10px;height:10px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-            kickoff,
-          '</span>',
-        '</div>',
-        '<div style="margin-top:0.9rem;padding-top:0.9rem;border-top:1px solid rgba(255,255,255,0.07);">',
-          '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.6rem;">More expert-selected picks available inside 👇</div>',
-          '<button class="btn btn-accent" onclick="makePayment(\'PRO\')" style="width:100%;padding:0.6rem;font-size:0.79rem;font-weight:700;">Unlock Picks</button>',  // ← FIX: Pass 'PRO'
-        '</div>',
-      '</div>'
-    );
+      console.log('renderProPicks: Pick', idx, '-', matchName, '- Kickoff:', kickoff);
+
+      html.push(
+        '<div class="pro-match-card">',
+          '<div class="pro-match-vs">',
+            '<span class="pro-match-team">' + team1 + '</span>',
+            '<span class="pro-match-vs-sep">vs</span>',
+            '<span class="pro-match-team">' + team2 + '</span>',
+          '</div>',
+          '<div class="pro-match-meta">',
+            '<span class="pro-competition-badge">' + league + '</span>',
+            '<span class="pro-kickoff-badge">',
+              '<svg style="width:10px;height:10px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+              kickoff,
+            '</span>',
+          '</div>',
+          '<div style="margin-top:0.9rem;padding-top:0.9rem;border-top:1px solid rgba(255,255,255,0.07);">',
+            '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.6rem;">More expert-selected picks available inside 👇</div>',
+            '<button class="btn btn-accent" onclick="makePayment(\'PRO\')" style="width:100%;padding:0.6rem;font-size:0.79rem;font-weight:700;">Unlock Picks</button>',
+          '</div>',
+        '</div>'
+      );
+    } catch(e) {
+      console.error('renderProPicks: Error rendering pick', idx, ':', e);
+    }
   });
 
-  container.innerHTML = html.join('');
+  console.log('renderProPicks: Generated', html.length, 'card HTML strings');
+  
+  try {
+    container.innerHTML = html.join('');
+    console.log('renderProPicks: Successfully rendered all picks');
+  } catch(e) {
+    console.error('renderProPicks: Error inserting HTML:', e);
+    container.innerHTML = mkEmpty('chart', 'Error displaying picks', 'Please try again later.');
+  }
 }
 function renderVisitorPreview(matches, totalMatches) {
   const container = document.getElementById('predictionsContainer');
