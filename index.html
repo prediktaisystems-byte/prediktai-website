@@ -1283,6 +1283,9 @@ function renderProPicks(picks) {
       
       // Get league and kickoff
       var league = pick.competition || 'League';
+      var market = pick.market || 'Market';
+      var confidence = pick.confidence || '0';
+      var reason = pick.reason || 'Analysis pending';
       
       // ── Format kickoff safely ─────────────────────────────────
       var kickoff = '–:–';
@@ -1303,14 +1306,17 @@ function renderProPicks(picks) {
 
       console.log('renderProPicks: Pick', idx, '-', team1, (team2 ? 'vs ' + team2 : ''), '- Kickoff:', kickoff);
 
-      // ── Build HTML card ──────────────────────────────────────
+      // ── Build HTML card with blurred details ──────────────────
       html.push(
         '<div class="pro-match-card">',
+          // ── Team names row (VISIBLE) ──────────────────────────
           '<div class="pro-match-vs">',
             '<span class="pro-match-team">' + team1 + '</span>',
             (team2 ? '<span class="pro-match-vs-sep">vs</span>' : ''),
             (team2 ? '<span class="pro-match-team">' + team2 + '</span>' : ''),
           '</div>',
+          
+          // ── League and kickoff row (VISIBLE) ──────────────────
           '<div class="pro-match-meta">',
             '<span class="pro-competition-badge">' + league + '</span>',
             '<span class="pro-kickoff-badge">',
@@ -1318,10 +1324,27 @@ function renderProPicks(picks) {
               kickoff,
             '</span>',
           '</div>',
-          '<div style="margin-top:0.9rem;padding-top:0.9rem;border-top:1px solid rgba(255,255,255,0.07);">',
-            '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.6rem;">More expert-selected picks available inside 👇</div>',
-            '<button class="btn btn-accent" onclick="makePayment(\'PRO\')" style="width:100%;padding:0.6rem;font-size:0.79rem;font-weight:700;">Unlock Picks</button>',
+          
+          // ── BLURRED DETAILS SECTION ──────────────────────────
+          '<div style="margin-top:0.9rem;padding:0.9rem;background:rgba(0,0,0,0.2);border-radius:0.5rem;backdrop-filter:blur(8px);">',
+            // Market (blurred)
+            '<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:0.5rem;filter:blur(4px);">',
+              'Market: ' + market,
+            '</div>',
+            // Confidence (blurred)
+            '<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:0.5rem;filter:blur(4px);">',
+              'Confidence: ' + confidence + '%',
+            '</div>',
+            // Reason (blurred)
+            '<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:0.8rem;filter:blur(4px);line-height:1.4;">',
+              'Why: ' + reason,
+            '</div>',
+            // "More picks available" text
+            '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.6rem;text-align:center;">More expert-selected picks available inside 👇</div>',
           '</div>',
+          
+          // ── UNLOCK BUTTON (VISIBLE) ──────────────────────────
+          '<button class="btn btn-accent" onclick="makePayment(\'PRO\')" style="width:100%;padding:0.6rem;font-size:0.79rem;font-weight:700;margin-top:0.6rem;">Unlock Picks</button>',
         '</div>'
       );
 
