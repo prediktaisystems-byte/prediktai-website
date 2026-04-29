@@ -1657,30 +1657,54 @@ function updateAuthUI() {
 
 function updateProfileInfo() {
   if (!loggedInUser) return;
+  
   var fullName = localStorage.getItem('prediktUserName') || '';
   document.getElementById('profileName').textContent  = fullName || '--';
   document.getElementById('profileEmail').textContent = loggedInUser.email || '--';
   document.getElementById('profilePhone').textContent = loggedInUser.phone || '--';
-  var planType  = loggedInUser.planType || 'Trial';
-  var isPremium = planType==='Paid' || planType==='Premium' || planType==='PRO';
-  document.getElementById('planType').innerHTML = (isPremium ? '\ud83d\udc8e Premium' : 'Trial') + ' <span class="plan-active-badge">Active</span>';
+  
+  // Get plan type and normalize to uppercase
+  var planType = (loggedInUser.planType || 'Trial').toString().trim();
+  var planTypeUpper = planType.toUpperCase();
+  
+  // Check plan type (case-insensitive)
+  var isPro = planTypeUpper === 'PRO';
+  var isPremium = planTypeUpper === 'PREMIUM' || planTypeUpper === 'PAID';
+  var hasPaidPlan = isPro || isPremium;
+  
+  // Display correct plan name
+  var displayPlan = 'Trial';
+  if (isPro) {
+    displayPlan = '🥇 Pro Picks';
+  } else if (isPremium) {
+    displayPlan = '💎 Premium';
+  }
+  
+  document.getElementById('planType').innerHTML = displayPlan + ' <span class="plan-active-badge">Active</span>';
+  
+  // Update button if paid plan
   var upgradeBtn = document.getElementById('upgradeBtn');
-  if (upgradeBtn && isPremium) {
-    upgradeBtn.textContent = '\u2705 Premium Active';
+  if (upgradeBtn && hasPaidPlan) {
+    var btnText = isPro ? '✅ Pro Picks Active' : '✅ Premium Active';
+    upgradeBtn.textContent = btnText;
     upgradeBtn.disabled = true;
     upgradeBtn.style.opacity = '0.6';
     upgradeBtn.style.cursor = 'default';
   }
-  var expiryStr = localStorage.getItem('prediktUserExpiry') || (loggedInUser.expiry||'');
+  
+  // Display expiry date
+  var expiryStr = localStorage.getItem('prediktUserExpiry') || (loggedInUser.expiry || '');
   if (expiryStr) {
     try {
       var expDate = new Date(expiryStr);
       if (!isNaN(expDate.getTime())) {
-        var formatted = expDate.toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'});
-        document.getElementById('expiresIn').innerHTML = '<span class="plan-expiry-text">expires: '+formatted+'</span>';
+        var formatted = expDate.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+        document.getElementById('expiresIn').innerHTML = '<span class="plan-expiry-text">expires: ' + formatted + '</span>';
       }
     } catch(e) {}
   }
+  
+  console.log('updateProfileInfo: planType=' + planType + ', isPro=' + isPro);
 }
 
 function logout() {
