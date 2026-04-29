@@ -1662,7 +1662,7 @@ function updateProfileInfo() {
   document.getElementById('profileEmail').textContent = loggedInUser.email || '--';
   document.getElementById('profilePhone').textContent = loggedInUser.phone || '--';
   var planType  = loggedInUser.planType || 'Trial';
-  var isPremium = planType==='Paid' || planType==='Premium';
+  var isPremium = planType==='Paid' || planType==='Premium' || planType==='PRO';
   document.getElementById('planType').innerHTML = (isPremium ? '\ud83d\udc8e Premium' : 'Trial') + ' <span class="plan-active-badge">Active</span>';
   var upgradeBtn = document.getElementById('upgradeBtn');
   if (upgradeBtn && isPremium) {
