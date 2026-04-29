@@ -1271,12 +1271,21 @@ function renderProPicks(picks) {
   if (!container) return;
 
   console.log('renderProPicks: Starting with', picks.length, 'picks');
+  console.log('renderProPicks: loggedInUser =', loggedInUser);
 
   if (!picks || picks.length === 0) {
     console.log('renderProPicks: No picks to render');
     container.innerHTML = mkEmpty('chart', 'No Pro Picks available yet', 'Check back soon for expert-selected picks.');
     return;
   }
+
+  // ── CHECK IF USER IS PRO MEMBER ────────────────────────────
+  var isProMember = false;
+  if (loggedInUser && loggedInUser.planType) {
+    var planType = loggedInUser.planType.toString().toUpperCase().trim();
+    isProMember = (planType === 'PRO');
+  }
+  console.log('renderProPicks: isProMember =', isProMember);
 
   var html = [];
   
@@ -1321,17 +1330,27 @@ function renderProPicks(picks) {
 
       console.log('renderProPicks: Pick', idx, '-', team1, (team2 ? 'vs ' + team2 : ''), '- Kickoff:', kickoff);
 
-      // ── Build HTML card with blurred details ──────────────────
+      // ── DETERMINE BLUR STYLE ────────────────────────────────
+      // If Pro member: NO blur
+      // If visitor/trial: WITH blur
+      var blurStyle = isProMember 
+        ? 'margin-top:0.9rem;padding:0.9rem;background:rgba(0,0,0,0.15);border-radius:0.5rem;'
+        : 'margin-top:0.9rem;padding:0.9rem;background:rgba(0,0,0,0.2);border-radius:0.5rem;backdrop-filter:blur(6px);';
+      
+      var marketBlur = isProMember ? '' : 'filter:blur(3px);';
+      var confidenceBlur = isProMember ? '' : 'filter:blur(2px);';
+      
+      // ── Build HTML card ──────────────────────────────────────
       html.push(
         '<div class="pro-match-card">',
-          // ── Team names row (VISIBLE) ──────────────────────────
+          // ── Team names row (ALWAYS VISIBLE) ──────────────────
           '<div class="pro-match-vs">',
             '<span class="pro-match-team">' + team1 + '</span>',
             (team2 ? '<span class="pro-match-vs-sep">vs</span>' : ''),
             (team2 ? '<span class="pro-match-team">' + team2 + '</span>' : ''),
           '</div>',
           
-          // ── League and kickoff row (VISIBLE) ──────────────────
+          // ── League and kickoff (ALWAYS VISIBLE) ──────────────
           '<div class="pro-match-meta">',
             '<span class="pro-competition-badge">' + league + '</span>',
             '<span class="pro-kickoff-badge">',
@@ -1340,26 +1359,26 @@ function renderProPicks(picks) {
             '</span>',
           '</div>',
           
-          // ── BLURRED DETAILS SECTION ──────────────────────────
-          '<div style="margin-top:0.9rem;padding:0.9rem;background:rgba(0,0,0,0.2);border-radius:0.5rem;backdrop-filter:blur(8px);">',
-            // Market (blurred)
-            '<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:0.5rem;filter:blur(4px);">',
+          // ── DETAILS SECTION - BLUR BASED ON MEMBERSHIP ────────
+          '<div style="' + blurStyle + '">',
+            // Market
+            '<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:0.5rem;' + marketBlur + '">',
               'Market: ' + market,
             '</div>',
-            // Confidence (blurred)
-            '<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:0.5rem;filter:blur(4px);">',
+            // Confidence
+            '<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:0.5rem;' + confidenceBlur + '">',
               'Confidence: ' + confidence + '%',
             '</div>',
-            // Reason (blurred)
-            '<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:0.8rem;filter:blur(4px);line-height:1.4;">',
+            // Reason
+            '<div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:0.8rem;' + confidenceBlur + ';line-height:1.4;">',
               'Why: ' + reason,
             '</div>',
-            // "More picks available" text
-            '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.6rem;text-align:center;">More expert-selected picks available inside 👇</div>',
+            // Message for non-Pro users
+            (isProMember ? '' : '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.6rem;text-align:center;">More expert-selected picks available inside 👇</div>'),
           '</div>',
           
-          // ── UNLOCK BUTTON (VISIBLE) ──────────────────────────
-          '<button class="btn btn-accent" onclick="makePayment(\'PRO\')" style="width:100%;padding:0.6rem;font-size:0.79rem;font-weight:700;margin-top:0.6rem;">Unlock Picks</button>',
+          // ── BUTTON - VISIBLE ONLY FOR NON-PRO ────────────────
+          (isProMember ? '' : '<button class="btn btn-accent" onclick="makePayment(\'PRO\')" style="width:100%;padding:0.6rem;font-size:0.79rem;font-weight:700;margin-top:0.6rem;">Unlock Picks</button>'),
         '</div>'
       );
 
@@ -1377,7 +1396,7 @@ function renderProPicks(picks) {
     console.error('renderProPicks: Error inserting HTML:', e);
     container.innerHTML = mkEmpty('chart', 'Error displaying picks', 'Please try again later.');
   }
-}
+  }
 function renderVisitorPreview(matches, totalMatches) {
   const container = document.getElementById('predictionsContainer');
   const lockedCount = Math.max(0, totalMatches - 1);
