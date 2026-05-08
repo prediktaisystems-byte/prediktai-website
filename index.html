@@ -2344,6 +2344,7 @@ function togglePage(page, clickedBtn) {
   if (page === 'admin')      { adminLoadUsers(); }
   if (page === 'staging')    { loadStagingData(); }
   if (page === 'workspace')  { loadWorkspacePage(); }
+  if (page === 'affiliate')  { loadAffiliateDashboard(); }
 
   // ── GA4: virtual page view + section-specific events ──────────────
   if (typeof PrediktAnalytics !== 'undefined') {
